@@ -178,6 +178,7 @@
 					};
 					750A814B2D97466B00418357 = {
 						CreatedOnToolsVersion = 16.2;
+						LastSwiftMigration = 1630;
 						TestTargetID = 750A81362D97466800418357;
 					};
 					750A81552D97466B00418357 = {
@@ -409,7 +410,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.chrisgiersch.GNAR;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chrisgiersch.GNARGame;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -438,7 +439,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.chrisgiersch.GNAR;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chrisgiersch.GNARGame;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -450,6 +451,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = FR9UX5S742;
@@ -459,6 +461,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.chrisgiersch.GNARTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "GNARTests/GNARTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GNAR.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GNAR";
@@ -469,6 +473,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = FR9UX5S742;
@@ -478,6 +483,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.chrisgiersch.GNARTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "GNARTests/GNARTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GNAR.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GNAR";

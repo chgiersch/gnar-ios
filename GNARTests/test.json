@@ -1,0 +1,28 @@
+{
+    "id": "test-mountain",
+    "name": "Test Mountain",
+    "lineWorths": [
+        {
+            "id": "test-line",
+            "name": "Test Line",
+            "descriptionText": "A test line",
+            "basePoints": {
+                "low": 100,
+                "medium": 200,
+                "high": 300
+            },
+            "area": "Test Area"
+        }
+    ],
+    "ecps": [
+        {
+            "id": "test-ecp",
+            "name": "Test ECP",
+            "descriptionText": "A test ECP",
+            "points": 1000,
+            "frequency": "daily",
+            "abbreviation": "TE",
+            "mountainSpecific": true
+        }
+    ]
+}

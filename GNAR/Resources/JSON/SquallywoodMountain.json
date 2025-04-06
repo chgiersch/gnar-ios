@@ -1,0 +1,1657 @@
+{
+  "id": "squallywood-mountain",
+  "version": "v1.0",
+  "name": "Squallywood",
+  "ecps": [
+    {
+      "id": "fart-claim",
+      "name": "Fart Claim",
+      "descriptionText": "Produce smelly fart in crowded Funitel or Tram Cabin and loudly state, \"That was me!\"",
+      "points": 500,
+      "frequency": "unlimited",
+      "abbreviation": "FC"
+    },
+    {
+      "id": "abdominals-bossi",
+      "name": "Abdominals with Bossi",
+      "descriptionText": "Do the exact same ab workout in the AM as John Bossi.",
+      "points": 3000,
+      "frequency": "daily",
+      "abbreviation": "AB"
+    },
+    {
+      "id": "bra-tree",
+      "name": "Bra Tree",
+      "descriptionText": "Remove underwear while seated on the Headwall lift, and succeed in tossing it onto the Bra Tree.",
+      "points": 1000,
+      "frequency": "daily",
+      "abbreviation": "BT"
+    },
+    {
+      "id": "cook-brekie",
+      "name": "Cook Brekie",
+      "descriptionText": "Cook breakfast with a camping stove in the KT line on a powder day. Must get first chair.",
+      "points": 5000,
+      "frequency": "daily",
+      "abbreviation": "CB"
+    },
+    {
+      "id": "extreme-brag",
+      "name": "Extreme Brag",
+      "descriptionText": "At Extreme Benches, brag to at least 5 people about how rad you got today.",
+      "points": 1000,
+      "frequency": "daily",
+      "abbreviation": "EB"
+    },
+    {
+      "id": "first-kt-chair",
+      "name": "First KT Chair",
+      "descriptionText": "First KT Chair on a powder day.",
+      "points": 5000,
+      "frequency": "daily",
+      "abbreviation": "FK"
+    },
+    {
+      "id": "first-kt-chair-fingers",
+      "name": "First KT Chair to Fingers",
+      "descriptionText": "First KT Chair on a powder day & do Nose to Fingers.",
+      "points": 6000,
+      "frequency": "daily",
+      "abbreviation": "FKF"
+    },
+    {
+      "id": "headwall-wrap",
+      "name": "Headwall Wrap",
+      "descriptionText": "Order a Thai wrap from the Headwall Cafe.",
+      "points": 2000,
+      "frequency": "daily",
+      "abbreviation": "HW"
+    },
+    {
+      "id": "first-chair-triple",
+      "name": "KT, Headwall, Granite",
+      "descriptionText": "First Chair on KT, Headwall, Granite Chief all on one powder day.",
+      "points": 3000,
+      "frequency": "daily",
+      "abbreviation": "KHG"
+    },
+    {
+      "id": "nug-mckitterick",
+      "name": "Nug to McKitterick",
+      "descriptionText": "Give Jeff McKitterick a phat nug.",
+      "points": 1000,
+      "frequency": "daily",
+      "abbreviation": "NM"
+    },
+    {
+      "id": "pole-position",
+      "name": "Pole Position",
+      "descriptionText": "Get the pole position space in the parking lot. Directly across from Plum Jacks and closest to Tram Bldg. No Handicap spots.",
+      "points": 2000,
+      "frequency": "daily",
+      "abbreviation": "PP"
+    },
+    {
+      "id": "slasher",
+      "name": "Slasher",
+      "descriptionText": "Ride the Granite Chief Lift with George Theobold. George is a commonly spotted Squallywood local who starred as slasher in Hot Dog, The Movie.",
+      "points": 2000,
+      "frequency": "daily",
+      "abbreviation": "SR"
+    },
+    {
+      "id": "surfer-steve",
+      "name": "Surfer Steve",
+      "descriptionText": "Ride Headwall Express with Surfer Steve. Steve is a diehard local who you won\u2019t be able to keep up with.",
+      "points": 2000,
+      "frequency": "daily",
+      "abbreviation": "SS"
+    },
+    {
+      "id": "tram-announcement",
+      "name": "Tram Announcement",
+      "descriptionText": "Get the Tram Operator to announce to a full tram load, 'And also today (your name) gets 2,000 GNAR extra credit points.' Only one player per tram ride.",
+      "points": 2000,
+      "frequency": "daily",
+      "abbreviation": "TA"
+    },
+    {
+      "id": "ten-bucks",
+      "name": "Ten Bucks",
+      "descriptionText": "Give out at least 5 Red Bulls in the KT line before the lift opens. If sponsored by Red Bull, must also give out $2 with each can.",
+      "points": 1500,
+      "frequency": "daily",
+      "abbreviation": "TB"
+    },
+    {
+      "id": "blues-diet",
+      "name": "Blue\u2019s Diet",
+      "descriptionText": "Eat and drink exactly what Blue does for one whole week. (Weekly / Monthly games)",
+      "points": 30000,
+      "frequency": "yearly",
+      "abbreviation": "BD"
+    },
+    {
+      "id": "blues-enduro",
+      "name": "Blue's Enduro",
+      "descriptionText": "Ski KT22 exactly the same number of times in one day as Blue. Do not compete with him or interfere with his skiing experience.",
+      "points": 10000,
+      "frequency": "yearly",
+      "abbreviation": "BE"
+    },
+    {
+      "id": "backwards-ski",
+      "name": "Backwards Ski",
+      "descriptionText": "Ski backwards from High Camp all the way down to the Extreme Benches during Christmas or President\u2019s Day week, after 3:30 pm. Skiers only. If busted, you lose points.",
+      "points": 7000,
+      "frequency": "yearly",
+      "abbreviation": "BS"
+    },
+    {
+      "id": "cushing-pond",
+      "name": "Cushing Pond",
+      "descriptionText": "Cross melted Cushing Pond.",
+      "points": 8000,
+      "frequency": "yearly",
+      "abbreviation": "CP"
+    },
+    {
+      "id": "debbie-dutton",
+      "name": "Debbie Dutton",
+      "descriptionText": "Buy Debbie Dutton lunch at the Squaw Valley restaurant of her choice.",
+      "points": 15000,
+      "frequency": "yearly",
+      "abbreviation": "DD"
+    },
+    {
+      "id": "employee-housing",
+      "name": "Employee Housing",
+      "descriptionText": "Successfully score with a SVSC employee currently living in the employee housing. Must spend the night in the disease den.",
+      "points": 20000,
+      "frequency": "yearly",
+      "abbreviation": "EH"
+    },
+    {
+      "id": "enchanted-forest-gnome",
+      "name": "Enchanted Forest Gnome",
+      "descriptionText": "Get altoid hummer from one of the legendary gnomes in the Enchanted Forest.",
+      "points": 1000000,
+      "frequency": "yearly",
+      "abbreviation": "EF"
+    },
+    {
+      "id": "funitel-bj",
+      "name": "Funitel BJ",
+      "descriptionText": "Get hummer in Funitel.",
+      "points": 15000,
+      "frequency": "yearly",
+      "abbreviation": "FH"
+    },
+    {
+      "id": "hot-tub",
+      "name": "Hot Tub",
+      "descriptionText": "Ride, fully clothed and with equipment on, from the top of Bailey\u2019s into the Hot Tub at High Camp.",
+      "points": 10000,
+      "frequency": "yearly",
+      "abbreviation": "HT"
+    },
+    {
+      "id": "kiss-burt",
+      "name": "Kiss Burt",
+      "descriptionText": "Kiss Tom Burt\u2019s snowboard boots. He must be wearing the boots and on the mountain. One player per hour.",
+      "points": 10000,
+      "frequency": "yearly",
+      "abbreviation": "KB"
+    },
+    {
+      "id": "kiss-schmidt",
+      "name": "Kiss Schmidt",
+      "descriptionText": "Kiss Scot Schmidt\u2019s ski boots. He must be wearing the boots and on the mountain. One player per hour.",
+      "points": 10000,
+      "frequency": "yearly",
+      "abbreviation": "KS"
+    },
+    {
+      "id": "lee-dooby",
+      "name": "Lee Dooby",
+      "descriptionText": "Challenge Lee Dooby (Squaw\u2019s only monoskiier) to a race and beat him. Lee chooses venue. Skiers cannot skate.",
+      "points": 10000,
+      "frequency": "yearly",
+      "abbreviation": "LD"
+    },
+    {
+      "id": "lost-and-found",
+      "name": "Lost and Found",
+      "descriptionText": "Collect an entire outfit from the Cable Car Lobby Lost and Found and wear it all day.",
+      "points": 10000,
+      "frequency": "yearly",
+      "abbreviation": "LF"
+    },
+    {
+      "id": "postman-larry",
+      "name": "Postman Larry",
+      "descriptionText": "Make headband or hat out of Priority Mail tape from Olympic Valley Post Office. Get it signed by 'Postman Larry' and ski with it on for 3 full days.",
+      "points": 10000,
+      "frequency": "yearly",
+      "abbreviation": "PL"
+    },
+    {
+      "id": "tom-day",
+      "name": "Tom Day",
+      "descriptionText": "Get your season pass signed (permanent marker) by Tom Day.",
+      "points": 8000,
+      "frequency": "yearly",
+      "abbreviation": "TD"
+    },
+    {
+      "id": "sticker-art",
+      "name": "Sticker Art",
+      "descriptionText": "Make your own sticker out of \u201cI SKI SQUAW\u201d or \u201cI SNOWBOARD SQUAW\u201d stickers and place it on your car for the season.",
+      "points": 10000,
+      "frequency": "yearly",
+      "abbreviation": "SA"
+    }
+  ],
+  "lineWorths": [
+    {
+      "name": "The Slantys",
+      "area": "Olympic Lady",
+      "basePoints": {
+        "low": 400,
+        "medium": 400,
+        "high": 400
+      }
+    },
+    {
+      "name": "MC's",
+      "area": "Olympic Lady",
+      "basePoints": {
+        "low": 500,
+        "medium": 450,
+        "high": 300
+      }
+    },
+    {
+      "name": "Hourglass",
+      "area": "Olympic Lady",
+      "basePoints": {
+        "low": 950,
+        "medium": 750,
+        "high": 400
+      }
+    },
+    {
+      "name": "Simmons's Drop",
+      "area": "Olympic Lady",
+      "basePoints": {
+        "low": null,
+        "medium": 950,
+        "high": 950
+      }
+    },
+    {
+      "name": "The Windowsill",
+      "area": "Olympic Lady",
+      "basePoints": {
+        "low": 600,
+        "medium": 600,
+        "high": 600
+      }
+    },
+    {
+      "name": "The Shoulder",
+      "area": "Eagle's Nest",
+      "basePoints": {
+        "low": 450,
+        "medium": 450,
+        "high": 450
+      }
+    },
+    {
+      "name": "Air off to Right",
+      "area": "Eagle's Nest",
+      "basePoints": {
+        "low": 950,
+        "medium": 900,
+        "high": 900
+      }
+    },
+    {
+      "name": "Center Route (Eagle's Nest)",
+      "area": "Eagle's Nest",
+      "basePoints": {
+        "low": 1000,
+        "medium": 1000,
+        "high": 900
+      }
+    },
+    {
+      "name": "High Line",
+      "area": "Eagle's Nest",
+      "basePoints": {
+        "low": 1300,
+        "medium": 1300,
+        "high": 1300
+      }
+    },
+    {
+      "name": "Ambrosia's Alternate",
+      "area": "Eagle's Nest",
+      "basePoints": {
+        "low": 750,
+        "medium": 500,
+        "high": 500
+      }
+    },
+    {
+      "name": "My Air",
+      "area": "The Nose",
+      "basePoints": {
+        "low": 850,
+        "medium": 650,
+        "high": 650
+      }
+    },
+    {
+      "name": "Coleman's Alternate",
+      "area": "The Nose",
+      "basePoints": {
+        "low": 950,
+        "medium": 850,
+        "high": 850
+      }
+    },
+    {
+      "name": "Coleman's Ridge",
+      "area": "The Nose",
+      "basePoints": {
+        "low": null,
+        "medium": 900,
+        "high": 900
+      }
+    },
+    {
+      "name": "Center Route (The Nose)",
+      "area": "The Nose",
+      "basePoints": {
+        "low": 1000,
+        "medium": 1000,
+        "high": 900
+      }
+    },
+    {
+      "name": "Coleman's Railroad",
+      "area": "The Nose",
+      "basePoints": {
+        "low": 850,
+        "medium": 750,
+        "high": 550
+      }
+    },
+    {
+      "name": "Half Moon",
+      "area": "The Nose",
+      "basePoints": {
+        "low": null,
+        "medium": 550,
+        "high": 550
+      }
+    },
+    {
+      "name": "Kt Gap",
+      "area": "The Nose",
+      "basePoints": {
+        "low": null,
+        "medium": 600,
+        "high": 600
+      }
+    },
+    {
+      "name": "Icefall",
+      "area": "Fingers",
+      "basePoints": {
+        "low": 900,
+        "medium": 55,
+        "high": 450
+      }
+    },
+    {
+      "name": "Hatchett Line",
+      "area": "Fingers",
+      "basePoints": {
+        "low": 950,
+        "medium": 850,
+        "high": 850
+      }
+    },
+    {
+      "name": "Egerbretson's",
+      "area": "Fingers",
+      "basePoints": {
+        "low": 1000,
+        "medium": 900,
+        "high": 800
+      }
+    },
+    {
+      "name": "The Crossover",
+      "area": "Fingers",
+      "basePoints": {
+        "low": 900,
+        "medium": 750,
+        "high": 750
+      }
+    },
+    {
+      "name": "Middle Knuckle",
+      "area": "Fingers",
+      "basePoints": {
+        "low": 1050,
+        "medium": 1050,
+        "high": null
+      }
+    },
+    {
+      "name": "Box Chute",
+      "area": "Fingers",
+      "basePoints": 1050
+    },
+    {
+      "name": "Main Knuckle",
+      "area": "Fingers",
+      "basePoints": {
+        "low": 750,
+        "medium": 700,
+        "high": 700
+      }
+    },
+    {
+      "name": "Main Air",
+      "area": "Fingers",
+      "basePoints": {
+        "low": 850,
+        "medium": 850,
+        "high": 850
+      }
+    },
+    {
+      "name": "LS Variations",
+      "area": "Fingers",
+      "basePoints": {
+        "low": 950,
+        "medium": 950,
+        "high": 950
+      }
+    },
+    {
+      "name": "Cartwheel",
+      "area": "West Side KT22",
+      "basePoints": {
+        "low": null,
+        "medium": 700,
+        "high": 700
+      }
+    },
+    {
+      "name": "Bigger Balls",
+      "area": "West Side KT22",
+      "basePoints": {
+        "low": 800,
+        "medium": 550,
+        "high": 550
+      }
+    },
+    {
+      "name": "No Wayes",
+      "area": "West Side KT22",
+      "basePoints": {
+        "low": null,
+        "medium": 850,
+        "high": 850
+      }
+    },
+    {
+      "name": "The Portal",
+      "area": "West Side KT22",
+      "basePoints": {
+        "low": 800,
+        "medium": 500,
+        "high": 300
+      }
+    },
+    {
+      "name": "Right to Rock",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": 450,
+        "medium": 150,
+        "high": 50
+      }
+    },
+    {
+      "name": "Snag Cliff",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": 800,
+        "medium": 650,
+        "high": 650
+      }
+    },
+    {
+      "name": "Triple Drop",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": 650,
+        "medium": 650,
+        "high": 450
+      }
+    },
+    {
+      "name": "Teet",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": 950,
+        "medium": 950,
+        "high": 650
+      }
+    },
+    {
+      "name": "Ice Goddess",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": 350,
+        "medium": 350,
+        "high": 350
+      }
+    },
+    {
+      "name": "One",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": 550,
+        "medium": 350,
+        "high": 350
+      }
+    },
+    {
+      "name": "Two",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": 550,
+        "medium": 400,
+        "high": 400
+      }
+    },
+    {
+      "name": "Three",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": 550,
+        "medium": 350,
+        "high": 350
+      }
+    },
+    {
+      "name": "Four",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": 400,
+        "medium": 350,
+        "high": 200
+      }
+    },
+    {
+      "name": "The Pillows",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": 300,
+        "medium": 200,
+        "high": 100
+      }
+    },
+    {
+      "name": "The Moon",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": null,
+        "medium": 700,
+        "high": 700
+      }
+    },
+    {
+      "name": "Adrenaline Rock",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": null,
+        "medium": 500,
+        "high": 500
+      }
+    },
+    {
+      "name": "Adrenaline Chute",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": 600,
+        "medium": 400,
+        "high": 150
+      }
+    },
+    {
+      "name": "Stair Stepper",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": 1000,
+        "medium": 650,
+        "high": 500
+      }
+    },
+    {
+      "name": "Shotgun Proper",
+      "area": "Enchanted Forest",
+      "basePoints": {
+        "low": 850,
+        "medium": 650,
+        "high": 500
+      }
+    },
+    {
+      "name": "The Gate",
+      "area": "Cornice II Bowl",
+      "basePoints": {
+        "low": 750,
+        "medium": 700,
+        "high": 650
+      }
+    },
+    {
+      "name": "The Triple",
+      "area": "Cornice II Bowl",
+      "basePoints": {
+        "low": 850,
+        "medium": 850,
+        "high": 650
+      }
+    },
+    {
+      "name": "No Way Out",
+      "area": "Cornice II Bowl",
+      "basePoints": {
+        "low": 600,
+        "medium": 600,
+        "high": 500
+      }
+    },
+    {
+      "name": "Peter Line",
+      "area": "Cornice II Bowl",
+      "basePoints": {
+        "low": 950,
+        "medium": 650,
+        "high": 650
+      }
+    },
+    {
+      "name": "Mini Triple",
+      "area": "Cornice II Bowl",
+      "basePoints": {
+        "low": 650,
+        "medium": 650,
+        "high": 650
+      }
+    },
+    {
+      "name": "Broken Back",
+      "area": "Cornice II Bowl",
+      "basePoints": {
+        "low": 500,
+        "medium": 500,
+        "high": 500
+      }
+    },
+    {
+      "name": "Rock Maze",
+      "area": "Cornice II Bowl",
+      "basePoints": {
+        "low": 500,
+        "medium": 200,
+        "high": 200
+      }
+    },
+    {
+      "name": "JT's",
+      "area": "Cornice II Bowl",
+      "basePoints": {
+        "low": 650,
+        "medium": 500,
+        "high": 400
+      }
+    },
+    {
+      "name": "Anvil Rock",
+      "area": "Cornice II Bowl",
+      "basePoints": {
+        "low": 750,
+        "medium": 650,
+        "high": 400
+      }
+    },
+    {
+      "name": "Upper Chair Line",
+      "area": "Cornice II Bowl",
+      "basePoints": {
+        "low": null,
+        "medium": 850,
+        "high": 850
+      }
+    },
+    {
+      "name": "The Governor",
+      "area": "Cornice II Bowl",
+      "basePoints": {
+        "low": null,
+        "medium": 850,
+        "high": 850
+      }
+    },
+    {
+      "name": "Sun Chute",
+      "area": "Light Towers/Headwall",
+      "basePoints": {
+        "low": 500,
+        "medium": 400,
+        "high": 200
+      }
+    },
+    {
+      "name": "Hairy Traverse",
+      "area": "Light Towers/Headwall",
+      "basePoints": {
+        "low": null,
+        "medium": 550,
+        "high": 550
+      }
+    },
+    {
+      "name": "Mr. Chipper",
+      "area": "Light Towers/Headwall",
+      "basePoints": {
+        "low": null,
+        "medium": 800,
+        "high": 700
+      }
+    },
+    {
+      "name": "Blizzard Line",
+      "area": "Light Towers/Headwall",
+      "basePoints": {
+        "low": 650,
+        "medium": 550,
+        "high": 300
+      }
+    },
+    {
+      "name": "Easy In",
+      "area": "Light Towers/Headwall",
+      "basePoints": {
+        "low": 350,
+        "medium": 350,
+        "high": 350
+      }
+    },
+    {
+      "name": "The Shelf",
+      "area": "Light Towers/Headwall",
+      "basePoints": {
+        "low": 800,
+        "medium": 800,
+        "high": 600
+      }
+    },
+    {
+      "name": "Arc Chute",
+      "area": "Light Towers/Headwall",
+      "basePoints": {
+        "low": 500,
+        "medium": 500,
+        "high": 500
+      }
+    },
+    {
+      "name": "Left of Talus",
+      "area": "Light Towers/Headwall",
+      "basePoints": {
+        "low": 650,
+        "medium": 650,
+        "high": 650
+      }
+    },
+    {
+      "name": "Tree Air",
+      "area": "Light Towers/Headwall",
+      "basePoints": {
+        "low": 800,
+        "medium": 500,
+        "high": 500
+      }
+    },
+    {
+      "name": "Gaff's Pad",
+      "area": "Light Towers/Headwall",
+      "basePoints": {
+        "low": null,
+        "medium": 950,
+        "high": 850
+      }
+    },
+    {
+      "name": "North Bowl Chutes",
+      "area": "Light Towers/Headwall",
+      "basePoints": {
+        "low": 800,
+        "medium": 400,
+        "high": 100
+      }
+    },
+    {
+      "name": "Hanging Valley",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": 950,
+        "medium": 850,
+        "high": 550
+      }
+    },
+    {
+      "name": "Great Scott",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": 1050,
+        "high": 1050
+      }
+    },
+    {
+      "name": "Extra Alternate",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": 950,
+        "medium": 800,
+        "high": 550
+      }
+    },
+    {
+      "name": "Extra Chute",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": 900,
+        "medium": 500,
+        "high": 300
+      }
+    },
+    {
+      "name": "Extra Rock 1",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": 1100,
+        "medium": 800,
+        "high": 500
+      }
+    },
+    {
+      "name": "and 2",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": 1050,
+        "high": 650
+      }
+    },
+    {
+      "name": "Extra Rock Box",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": 900,
+        "medium": 800,
+        "high": 500
+      }
+    },
+    {
+      "name": "The Tube",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": 1100,
+        "medium": 900,
+        "high": 550
+      }
+    },
+    {
+      "name": "Box Air",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": 800,
+        "medium": 700,
+        "high": 600
+      }
+    },
+    {
+      "name": "Box Shelf",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": 900,
+        "medium": 700,
+        "high": 700
+      }
+    },
+    {
+      "name": "Hawley Rock",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": 850,
+        "medium": 750,
+        "high": 450
+      }
+    },
+    {
+      "name": "Main Chute",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": 950,
+        "high": 850
+      }
+    },
+    {
+      "name": "Mr. Ugly",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": 1050,
+        "high": 1050
+      }
+    },
+    {
+      "name": "Beck's Rock",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": 1050,
+        "high": 1050
+      }
+    },
+    {
+      "name": "The Gun Show",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": null,
+        "high": 1200
+      }
+    },
+    {
+      "name": "Schmidiots",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": 1200,
+        "high": 950
+      }
+    },
+    {
+      "name": "Draft Rock",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": 1050,
+        "high": 950
+      }
+    },
+    {
+      "name": "Easy Street",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": 850,
+        "high": 800
+      }
+    },
+    {
+      "name": "Mr. Toad's",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": 1050,
+        "high": 800
+      }
+    },
+    {
+      "name": "The Loft",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": 1050,
+        "high": 850
+      }
+    },
+    {
+      "name": "Center Line",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": 1100,
+        "high": 800
+      }
+    },
+    {
+      "name": "Chimney Sweep",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": 950,
+        "medium": 900,
+        "high": 700
+      }
+    },
+    {
+      "name": "Pony Express",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": 1050,
+        "high": 1000
+      }
+    },
+    {
+      "name": "For Pete's Sake",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": null,
+        "high": 1300
+      }
+    },
+    {
+      "name": "Bower's Tower",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": null,
+        "high": 850
+      }
+    },
+    {
+      "name": "McShlonkey's",
+      "area": "The Palisades",
+      "basePoints": {
+        "low": null,
+        "medium": null,
+        "high": 900
+      }
+    },
+    {
+      "name": "Far Right Rock",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": 850,
+        "medium": 750,
+        "high": 350
+      }
+    },
+    {
+      "name": "Crag Chute",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": 850,
+        "medium": 650,
+        "high": 250
+      }
+    },
+    {
+      "name": "Poncet",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": null,
+        "medium": 1050,
+        "high": 750
+      }
+    },
+    {
+      "name": "Banana",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": 1100,
+        "medium": 900,
+        "high": 500
+      }
+    },
+    {
+      "name": "Slitoris",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": null,
+        "medium": 1050,
+        "high": 600
+      }
+    },
+    {
+      "name": "Diagonal",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": 1000,
+        "medium": 850,
+        "high": 550
+      }
+    },
+    {
+      "name": "Yikes",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": 1050,
+        "medium": 1050,
+        "high": 550
+      }
+    },
+    {
+      "name": "The Spitter",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": 1100,
+        "medium": 900,
+        "high": 500
+      }
+    },
+    {
+      "name": "Glen Plake Air",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": null,
+        "medium": 950,
+        "high": 700
+      }
+    },
+    {
+      "name": "Cheese Grater",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": 500,
+        "medium": 400,
+        "high": 100
+      }
+    },
+    {
+      "name": "Schmidt's",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": null,
+        "medium": 1000,
+        "high": 700
+      }
+    },
+    {
+      "name": "Pyramid Rock",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": 450,
+        "medium": 450,
+        "high": 450
+      }
+    },
+    {
+      "name": "The Cooker",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": 500,
+        "medium": 500,
+        "high": 500
+      }
+    },
+    {
+      "name": "Slice",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": null,
+        "medium": 750,
+        "high": 700
+      }
+    },
+    {
+      "name": "Steep Line",
+      "area": "Mainline Pocket",
+      "basePoints": {
+        "low": 400,
+        "medium": 350,
+        "high": 200
+      }
+    },
+    {
+      "name": "The Runaround",
+      "area": "Broken Arrow",
+      "basePoints": {
+        "low": 550,
+        "medium": 550,
+        "high": 550
+      }
+    },
+    {
+      "name": "Sacrifice",
+      "area": "Broken Arrow",
+      "basePoints": {
+        "low": null,
+        "medium": 950,
+        "high": 950
+      }
+    },
+    {
+      "name": "V-Rock",
+      "area": "Broken Arrow",
+      "basePoints": {
+        "low": null,
+        "medium": 1050,
+        "high": 1050
+      }
+    },
+    {
+      "name": "Dead Man's",
+      "area": "Broken Arrow",
+      "basePoints": {
+        "low": 800,
+        "medium": 500,
+        "high": 200
+      }
+    },
+    {
+      "name": "Katmandu",
+      "area": "Silverado",
+      "basePoints": {
+        "low": 450,
+        "medium": 350,
+        "high": 250
+      }
+    },
+    {
+      "name": "The Castle",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": 500,
+        "high": 500
+      }
+    },
+    {
+      "name": "Ice Fall",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": 300,
+        "high": 300
+      }
+    },
+    {
+      "name": "Kazu's",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": 450,
+        "high": 450
+      }
+    },
+    {
+      "name": "The Swell",
+      "area": "Silverado",
+      "basePoints": {
+        "low": 950,
+        "medium": 950,
+        "high": 750
+      }
+    },
+    {
+      "name": "Drifter",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": null,
+        "high": 850
+      }
+    },
+    {
+      "name": "The Spigot",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": null,
+        "high": 950
+      }
+    },
+    {
+      "name": "The Spout",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": null,
+        "high": 1000
+      }
+    },
+    {
+      "name": "Doughboy's",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": 850,
+        "high": 750
+      }
+    },
+    {
+      "name": "Gott's",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": 700,
+        "high": 700
+      }
+    },
+    {
+      "name": "Whitewater",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": 700,
+        "high": 700
+      }
+    },
+    {
+      "name": "Frogs and Toads",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": 750,
+        "high": 750
+      }
+    },
+    {
+      "name": "Blanka Ball",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": 1000,
+        "high": 950
+      }
+    },
+    {
+      "name": "Whatever Trevor",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": 950,
+        "high": 850
+      }
+    },
+    {
+      "name": "Throne",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": null,
+        "high": null
+      }
+    },
+    {
+      "name": "The Moat",
+      "area": "Silverado",
+      "basePoints": {
+        "low": null,
+        "medium": 500,
+        "high": 400
+      }
+    },
+    {
+      "name": "Early Shirley",
+      "area": "Shirley Chutes",
+      "basePoints": {
+        "low": 50,
+        "medium": 50,
+        "high": 50
+      }
+    },
+    {
+      "name": "Squirrelly Shirley",
+      "area": "Shirley Chutes",
+      "basePoints": {
+        "low": 500,
+        "medium": 400,
+        "high": 200
+      }
+    },
+    {
+      "name": "Surley Shirley",
+      "area": "Shirley Chutes",
+      "basePoints": {
+        "low": 500,
+        "medium": 200,
+        "high": 200
+      }
+    },
+    {
+      "name": "Burley Shirley",
+      "area": "Shirley Chutes",
+      "basePoints": {
+        "low": 600,
+        "medium": 500,
+        "high": 400
+      }
+    },
+    {
+      "name": "Avy Slab",
+      "area": "Granite Chief Chair",
+      "basePoints": {
+        "low": 650,
+        "medium": 400,
+        "high": 200
+      }
+    },
+    {
+      "name": "Airliner",
+      "area": "Granite Chief Chair",
+      "basePoints": {
+        "low": null,
+        "medium": 700,
+        "high": 500
+      }
+    },
+    {
+      "name": "Chamber Cliff",
+      "area": "Granite Chief Chair",
+      "basePoints": {
+        "low": null,
+        "medium": 900,
+        "high": 900
+      }
+    },
+    {
+      "name": "Huck into Trees",
+      "area": "Granite Chief Chair",
+      "basePoints": {
+        "low": null,
+        "medium": 300,
+        "high": 300
+      }
+    },
+    {
+      "name": "Fish Ladder",
+      "area": "Granite Chief Chair",
+      "basePoints": {
+        "low": 500,
+        "medium": 450,
+        "high": 400
+      }
+    },
+    {
+      "name": "Rockslide",
+      "area": "Granite Chief Chair",
+      "basePoints": {
+        "low": null,
+        "medium": 400,
+        "high": 400
+      }
+    },
+    {
+      "name": "The Gutter",
+      "area": "Granite Chief Chair",
+      "basePoints": {
+        "low": null,
+        "medium": 400,
+        "high": 300
+      }
+    },
+    {
+      "name": "Upper Diving Board",
+      "area": "Granite Chief Chair",
+      "basePoints": {
+        "low": null,
+        "medium": 400,
+        "high": 350
+      }
+    },
+    {
+      "name": "Voltage Ledge",
+      "area": "Granite Chief Chair",
+      "basePoints": {
+        "low": null,
+        "medium": 500,
+        "high": 500
+      }
+    },
+    {
+      "name": "Juniper Ledge",
+      "area": "Granite Chief Chair",
+      "basePoints": {
+        "low": 600,
+        "medium": 150,
+        "high": 150
+      }
+    },
+    {
+      "name": "Double Drop",
+      "area": "Granite Chief Chair",
+      "basePoints": {
+        "low": null,
+        "medium": 800,
+        "high": 600
+      }
+    },
+    {
+      "name": "Snag Ledge",
+      "area": "Granite Chief Chair",
+      "basePoints": {
+        "low": 300,
+        "medium": 300,
+        "high": 100
+      }
+    },
+    {
+      "name": "Patrol Chute",
+      "area": "Granite Chief Peak",
+      "basePoints": {
+        "low": 1050,
+        "medium": 900,
+        "high": 550
+      }
+    },
+    {
+      "name": "Goodwill\u2019s Air",
+      "area": "Granite Chief Peak",
+      "basePoints": {
+        "low": null,
+        "medium": 900,
+        "high": 900
+      }
+    },
+    {
+      "name": "Smooth Air",
+      "area": "Granite Chief Peak",
+      "basePoints": {
+        "low": null,
+        "medium": 550,
+        "high": null
+      }
+    },
+    {
+      "name": "Deslauries\u2019",
+      "area": "Granite Chief Peak",
+      "basePoints": {
+        "low": null,
+        "medium": 500,
+        "high": 500
+      }
+    },
+    {
+      "name": "Summit Airs",
+      "area": "Granite Chief Peak",
+      "basePoints": {
+        "low": null,
+        "medium": 500,
+        "high": 500
+      }
+    },
+    {
+      "name": "Direct Alternate",
+      "area": "Granite Chief Peak",
+      "basePoints": {
+        "low": 450,
+        "medium": 150,
+        "high": 150
+      }
+    },
+    {
+      "name": "Christmas Tree Chute",
+      "area": "Granite Chief Peak",
+      "basePoints": {
+        "low": 300,
+        "medium": 200,
+        "high": 100
+      }
+    },
+    {
+      "name": "Treboy\u2019s",
+      "area": "Granite Chief Peak",
+      "basePoints": {
+        "low": 750,
+        "medium": 600,
+        "high": 550
+      }
+    },
+    {
+      "name": "Plake Line",
+      "area": "Granite Chief Peak",
+      "basePoints": {
+        "low": 1000,
+        "medium": 800,
+        "high": 550
+      }
+    },
+    {
+      "name": "Tight Wad",
+      "area": "Granite Chief Peak",
+      "basePoints": {
+        "low": null,
+        "medium": 850,
+        "high": 650
+      }
+    },
+    {
+      "name": "Robert Frost",
+      "area": "Granite Chief Peak",
+      "basePoints": {
+        "low": null,
+        "medium": null,
+        "high": 1050
+      }
+    },
+    {
+      "name": "VIPs",
+      "area": "Granite Chief Peak",
+      "basePoints": {
+        "low": 200,
+        "medium": 200,
+        "high": 200
+      }
+    }
+  ]
+}

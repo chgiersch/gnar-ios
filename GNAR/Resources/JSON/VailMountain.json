@@ -1,0 +1,299 @@
+{
+    "id": "vail-mountain",
+    "version": "1.0",
+    "name": "Vail",
+    "lineWorths": [
+        {
+            "id": "challenge",
+            "name": "Challenge (s.r. chute)",
+            "descriptionText": "Frontside - Challenge skier's right chute",
+            "basePoints": 100,
+            "area": "Frontside"
+        },
+        {
+            "id": "chair-4-cliffs-sneak",
+            "name": "Chair 4 Cliffs (s.l. sneak)",
+            "descriptionText": "Frontside - Chair 4 Cliffs skier's left sneak",
+            "basePoints": 200,
+            "area": "Frontside"
+        },
+        {
+            "id": "chair-4-cliffs-center",
+            "name": "Chair 4 Cliffs (center)",
+            "descriptionText": "Frontside - Chair 4 Cliffs center",
+            "basePoints": 200,
+            "area": "Frontside"
+        },
+        {
+            "id": "south-rim-no-cliff",
+            "name": "South Rim (no cliff)",
+            "descriptionText": "Frontside - South Rim without cliff",
+            "basePoints": 150,
+            "area": "Frontside"
+        },
+        {
+            "id": "north-rim-no-cliff",
+            "name": "North Rim (no cliff)",
+            "descriptionText": "Frontside - North Rim without cliff",
+            "basePoints": 400,
+            "area": "Frontside"
+        },
+        {
+            "id": "highline-nonstop",
+            "name": "Highline (non-stop)",
+            "descriptionText": "Frontside - Highline non-stop",
+            "basePoints": 1000,
+            "area": "Frontside"
+        },
+        {
+            "id": "dragons-teeth-no-cliff",
+            "name": "Dragons Teeth (no cliff)",
+            "descriptionText": "Backside - Dragons Teeth without cliff",
+            "basePoints": 200,
+            "area": "Backside"
+        },
+        {
+            "id": "forever-nonstop",
+            "name": "Forever (non-stop)",
+            "descriptionText": "Backside - Forever non-stop",
+            "basePoints": 400,
+            "area": "Backside"
+        },
+        {
+            "id": "orient-express",
+            "name": "Orient Express",
+            "descriptionText": "Backside - Orient Express",
+            "basePoints": 300,
+            "area": "Backside"
+        },
+        {
+            "id": "outer-mongolia-rope-line",
+            "name": "Outer Mongolia Rope Line",
+            "descriptionText": "Backside - Outer Mongolia Rope Line",
+            "basePoints": 1000,
+            "area": "Backside"
+        },
+        {
+            "id": "kangaroo-cornice",
+            "name": "Kangaroo Cornice",
+            "descriptionText": "Frontside - Kangaroo Cornice",
+            "basePoints": 100,
+            "area": "Frontside"
+        },
+        {
+            "id": "look-ma-sr",
+            "name": "Look Ma (s.r.)",
+            "descriptionText": "Frontside - Look Ma, skier's right",
+            "basePoints": 100,
+            "area": "Frontside"
+        },
+        {
+            "id": "look-ma-sl",
+            "name": "Look Ma (s.l.)",
+            "descriptionText": "Frontside - Look Ma, skier's left",
+            "basePoints": 100,
+            "area": "Frontside"
+        },
+        {
+            "id": "powerline-chute",
+            "name": "Powerline Chute",
+            "descriptionText": "Frontside - Powerline Chute",
+            "basePoints": 200,
+            "area": "Frontside"
+        },
+        {
+            "id": "north-rim-2-cliffs",
+            "name": "North Rim (w/ 2 cliffs)",
+            "descriptionText": "Frontside - North Rim with 2 cliffs",
+            "basePoints": 600,
+            "area": "Frontside"
+        },
+        {
+            "id": "redsquare-no-cornice",
+            "name": "Redsquare (no cornice)",
+            "descriptionText": "Backside - Redsquare without cornice",
+            "basePoints": 400,
+            "area": "Backside"
+        },
+        {
+            "id": "redsquare-w-cornice-huck",
+            "name": "Redsquare (w/ cornice huck)",
+            "descriptionText": "Backside - Redsquare with cornice huck",
+            "basePoints": 600,
+            "area": "Backside"
+        },
+        {
+            "id": "heavy-metal",
+            "name": "Heavy Metal",
+            "descriptionText": "Backside - Heavy Metal",
+            "basePoints": 1000,
+            "area": "Backside"
+        }
+    ],
+    
+    
+    "ecps": [
+        {
+            "id": "bra-tree",
+            "name": "Bra Tree",
+            "descriptionText": "Remove underwear and succeed in tossing it onto the Bra Tree.",
+            "points": 1000,
+            "mountainSpecific": true,
+            "frequency": "daily"
+        },
+        {
+            "id": "cook-brekie",
+            "name": "Cook Brekie",
+            "descriptionText": "Cook breakfast with a camping stove in the Vista Bahn line on a powder day. Must get first chair.",
+            "points": 5000,
+            "mountainSpecific": true,
+            "frequency": "daily"
+        },
+        {
+            "id": "extreme-brag",
+            "name": "Extreme Brag",
+            "descriptionText": "At Belle’s Camp deck, brag to at least 5 people about how rad you got today.",
+            "points": 1000,
+            "mountainSpecific": true,
+            "frequency": "daily"
+        },
+        {
+            "id": "first-vista-bahn-chair",
+            "name": "First Vista Bahn Chair",
+            "descriptionText": "First Vista Bahn chair on a powder day.",
+            "points": 5000,
+            "mountainSpecific": true,
+            "frequency": "daily"
+        },
+        {
+            "id": "jog-bridge-street",
+            "name": "Jog Bridge Street",
+            "descriptionText": "Jog from the transportation center to the Vista Bahn maze.",
+            "points": 500,
+            "mountainSpecific": true,
+            "frequency": "daily"
+        },
+        {
+            "id": "john-garnsey-high-five",
+            "name": "John Garnsey High-Five",
+            "descriptionText": "Give Vail Co-President John Garnsey a high-five.",
+            "points": 2000,
+            "mountainSpecific": true,
+            "frequency": "daily"
+        }
+        ,
+        {
+            "id": "after-3pm",
+            "name": "After 3pm",
+            "descriptionText": "Perform any line in this book after 3pm.",
+            "points": 50,
+            "mountainSpecific": false,
+            "frequency": "unlimited"
+        },
+        {
+            "id": "butt-naked",
+            "name": "Butt Naked",
+            "descriptionText": "Complete line butt naked. If jailed you lose your points.",
+            "points": 5000,
+            "mountainSpecific": false,
+            "frequency": "unlimited"
+        },
+        {
+            "id": "cat-track-gap",
+            "name": "Cat Track Gap",
+            "descriptionText": "Gap jump a cat track.",
+            "points": 300,
+            "mountainSpecific": false,
+            "frequency": "unlimited"
+        },
+        {
+            "id": "ego-claim",
+            "name": "Ego Claim",
+            "descriptionText": "After skiing a designated line, go over to a group of strangers who were watching and claim, 'I'm the best skier on the mountain!'",
+            "points": 500,
+            "mountainSpecific": false,
+            "frequency": "unlimited"
+        },
+        {
+            "id": "first-of-year",
+            "name": "First of Year",
+            "descriptionText": "The first person to ski a designated line this year.",
+            "points": 200,
+            "mountainSpecific": false,
+            "frequency": "unlimited"
+        },
+        {
+            "id": "pole-whacker",
+            "name": "Pole Whacker",
+            "descriptionText": "Vigorously whack your pole above a line for at least 30 seconds.",
+            "points": 200,
+            "mountainSpecific": false,
+            "frequency": "unlimited"
+        },
+        {
+            "id": "rope-air",
+            "name": "Rope Air",
+            "descriptionText": "Jump over any rope. Rope must be above ground.",
+            "points": 200,
+            "mountainSpecific": false,
+            "frequency": "unlimited"
+        },
+        {
+            "id": "radness-yell",
+            "name": "Radness Yell",
+            "descriptionText": "Before dropping into a line, vigorously wave arms while yelling at the top of lungs: 'Hey! Check me out! I'm going to rip the shit out of this!'",
+            "points": 200,
+            "mountainSpecific": false,
+            "frequency": "unlimited"
+        },
+        {
+            "id": "staircase",
+            "name": "Staircase",
+            "descriptionText": "Successfully navigate the staircase in heavy snow conditions.",
+            "points": 500,
+            "mountainSpecific": false,
+            "frequency": "unlimited"
+        }
+        ,
+        {
+            "id": "backwards-ski",
+            "name": "Backwards Ski",
+            "descriptionText": "Ski backwards from PHQ down Riva to the base of Chair 6 during Christmas week, Pres. Day week, or Easter week after 3:30 pm.",
+            "points": 7000,
+            "mountainSpecific": true,
+            "frequency": "yearly"
+        },
+        {
+            "id": "gondola-bj",
+            "name": "Gondola BJ",
+            "descriptionText": "Get hummer in Gondola.",
+            "points": 15000,
+            "mountainSpecific": true,
+            "frequency": "yearly"
+        },
+        {
+            "id": "lost-and-found",
+            "name": "Lost and Found",
+            "descriptionText": "Collect an entire outfit from lost & found, and wear it all day.",
+            "points": 10000,
+            "mountainSpecific": false,
+            "frequency": "yearly"
+        },
+        {
+            "id": "mom-line",
+            "name": "Mom Line",
+            "descriptionText": "Talking to your mother on a cell phone (no headset), stick a 500+ line.",
+            "points": 7000,
+            "mountainSpecific": false,
+            "frequency": "yearly"
+        },
+        {
+            "id": "mono-skiing",
+            "name": "Mono Skiing",
+            "descriptionText": "Go monoskiing all day long.",
+            "points": 15000,
+            "mountainSpecific": false,
+            "frequency": "yearly"
+        }
+    ]
+}
