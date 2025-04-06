@@ -1,0 +1,50 @@
+# Xcode
+DerivedData/
+*.xcworkspace
+*.xcuserstate
+*.xcuserdata/
+*.xccheckout
+*.xcodeproj/project.xcworkspace/
+!default.xcworkspace
+
+# SwiftPM
+.build/
+Packages/
+.swiftpm/
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+
+# Core Data auto-generated files (optional)
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Logs & temporary files
+*.log
+*.tmp
+*.swp
+*.DS_Store
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Git
+*.orig
+*.rej
+*.patch
+
+# Xcode Cloud
+.xcscmblueprint
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Bundler (if using fastlane or CocoaPods)
+.bundle/
+
+# Fastlane
+fastlane/report.xml
+fastlane/screenshots
+fastlane/test_output
