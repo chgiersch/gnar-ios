@@ -10,71 +10,100 @@ import SwiftUI
 import CoreData
 
 struct GamesView: View {
-    @StateObject private var viewModel: GamesViewModel
+    @ObservedObject var viewModel: GamesViewModel
+    @State private var selectedPreview: GameSessionPreview?
     
-    init(viewModel: GamesViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
-    }
-
     var body: some View {
-        VStack {
-            Group {
-                if viewModel.isLoading {
-                    ProgressView("Loading games...")
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding()
-                } else if viewModel.sessionPreviews.isEmpty {
-                    Text("No games yet.")
-                        .foregroundColor(.gray)
-                        .padding()
-                } else {
-                    List(viewModel.sessionPreviews) { session in
-                        VStack(alignment: .leading) {
-                            Text(session.mountainName)
-                                .font(.headline)
-                            Text("Started on \(session.date.formatted(.dateTime.month().day().hour().minute()))")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+        ZStack {
+            VStack {
+                Text("Games")
+                    .font(.largeTitle.bold())
+                    .padding(.top)
+                    .padding(.horizontal)
+
+                Divider()
+
+                List {
+                    if viewModel.sessionPreviews.isEmpty {
+                        Text("No games yet.")
+                            .foregroundColor(.gray)
+                            .padding()
+                    } else {
+                        ForEach(viewModel.sessionPreviews) { session in
+                            Button {
+                                selectedPreview = session
+                            } label: {
+                                sessionRow(session)
+                            }
                         }
-                        .padding(.vertical, 4)
                     }
-                    .listStyle(.plain)
                 }
             }
-
-            Spacer()
-
+            .listStyle(.plain)
+            
+            if viewModel.isLoading {
+                loadingState(text: "Loading games...")
+                    .background(.thinMaterial)
+            }
+        }
+        .task {
+            await viewModel.loadIfNeeded()
+        }
+        .sheet(isPresented: $viewModel.showingGameBuilder) {
+            GameBuilderView(coreData: viewModel.coreData) { newSession in
+                Task {
+                    await viewModel.loadIfNeeded()
+                }
+            }
+        }
+        .overlay(alignment: .bottom) {
             Button(action: {
                 viewModel.showingGameBuilder = true
             }) {
-                Label("New Game", systemImage: "plus")
-                    .padding()
+                Text("Start New Game")
+                    .font(.headline)
                     .frame(maxWidth: .infinity)
-                    .background(Color.blue.opacity(0.2))
-                    .cornerRadius(10)
+                    .padding()
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                    .padding(.horizontal)
             }
-            .padding()
-        }
-        .navigationTitle("Games")
-        .sheet(isPresented: $viewModel.showingGameBuilder) {
-            GameBuilderView(context: viewModel.viewContext) { session in
-                viewModel.activeSession = session
-                Task {
-                    await viewModel.loadSessions()
-                }
-            }
-        }
-        .fullScreenCover(item: $viewModel.activeSession) { session in
-            GameDashboardView(session: session)
-        }
-        .onAppear {
-            Task {
-                await viewModel.loadIfNeeded()
-            }
+            .padding(.bottom, 12)
         }
     }
-}
 
-#Preview {
+    private func loadingState(text: String) -> some View {
+        VStack(spacing: 12) {
+            ProgressView()
+            Text(text)
+                .font(.footnote)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+    }
     
+    private func sessionRow(_ session: GameSessionPreview) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(session.mountainName)
+                    .font(.headline)
+                Spacer()
+                Text("\(session.playerCount) player\(session.playerCount == 1 ? "" : "s")")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            
+            if !session.playerNames.isEmpty {
+                Text("👥 " + session.playerNames.joined(separator: ", "))
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+            
+            Text("🕓 \(session.date.formatted(.dateTime.month().day().hour().minute()))")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 6)
+    }
 }

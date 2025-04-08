@@ -12,23 +12,26 @@ import CoreData
 struct ScoreEntryView: View {
     @StateObject private var viewModel: ScoreEntryViewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var isShowingLineWorthPicker = false
+    @State private var isShowingTrickPicker = false
+    @State private var isShowingECPPicker = false
+    @State private var isShowingPenaltyPicker = false
+    
     let onScoreAdded: (Score) -> Void
     let isFreeRange: Bool
     
     init(
         playerName: String,
+        session: GameSession,
         context: NSManagedObjectContext,
         isFreeRange: Bool,
         onScoreAdded: @escaping (Score) -> Void
     ) {
-        _viewModel = StateObject(wrappedValue: ScoreEntryViewModel(playerName: playerName, context: context))
+        _viewModel = StateObject(wrappedValue: ScoreEntryViewModel(
+            playerName: playerName,
+            session: session,
+            context: context))
         self.onScoreAdded = onScoreAdded
-        self.isFreeRange = isFreeRange
-    }
-
-    init(viewModel: ScoreEntryViewModel, isFreeRange: Bool = false) {
-        _viewModel = StateObject(wrappedValue: viewModel)
-        self.onScoreAdded = { _ in }
         self.isFreeRange = isFreeRange
     }
 
@@ -45,9 +48,9 @@ struct ScoreEntryView: View {
         }
         .padding(.vertical)
     }
-    
+
     private var lineWorthSection: some View {
-        if let line = $viewModel.selectedLineScore.wrappedValue {
+        if let line = viewModel.selectedLineScore {
             return AnyView(Section("Line Worth") {
                 HStack {
                     HStack {
@@ -56,7 +59,6 @@ struct ScoreEntryView: View {
                                 .font(.headline)
                         } else {
                             Text("No Line Worth")
-                                .font(.headline)
                                 .foregroundColor(.secondary)
                         }
                         Spacer()
@@ -64,9 +66,9 @@ struct ScoreEntryView: View {
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        viewModel.showLinePicker()
+                        isShowingLineWorthPicker = true
                     }
-                    
+
                     Button(action: viewModel.removeLine) {
                         Image(systemName: "trash")
                             .foregroundColor(.red)
@@ -78,106 +80,102 @@ struct ScoreEntryView: View {
         }
     }
 
-    //    private var tricksSection: some View {
-    //        if !viewModel.selectedTricks.isEmpty {
-    //            return AnyView(Section("Tricks") {
-    //                ForEach(Array(viewModel.selectedTricks.enumerated()), id: \.offset) { index, trick in
-    //                    HStack {
-    //                        Text(trick.name)
-    //                        Spacer()
-    //                        Text("\(trick.points)")
-    //                        Button(action: { viewModel.removeTrick(at: index) }) {
-    //                            Image(systemName: "trash")
-    //                                .foregroundColor(.red)
-    //                        }
-    //                    }
-    //                }
-    //            })
-    //        } else {
-    //            return AnyView(EmptyView())
-    //        }
-    //    }
-    //
-    //    private var ecpsSection: some View {
-    //        if !viewModel.selectedECPs.isEmpty {
-    //            return AnyView(Section("ECPs") {
-    //                ForEach(Array(viewModel.selectedECPs.enumerated()), id: \.offset) { index, ecpID in
-    //                    if let ecp = mockECPs.first(where: { $0.id == ecpID }) {
-    //                        HStack {
-    //                            VStack(alignment: .leading) {
-    //                                Text(ecp.name)
-    //                                Text(ecp.descriptionText)
-    //                                    .font(.caption)
-    //                                    .foregroundColor(.secondary)
-    //                            }
-    //                            Spacer()
-    //                            Text("\(ecp.points)")
-    //                            Button(action: { viewModel.removeECP(at: index) }) {
-    //                                Image(systemName: "trash")
-    //                                    .foregroundColor(.red)
-    //                            }
-    //                        }
-    //                    }
-    //                }
-    //            })
-    //        } else {
-    //            return AnyView(EmptyView())
-    //        }
-    //    }
-    //
-    //    private var penaltiesSection: some View {
-    //        if !viewModel.selectedPenalties.isEmpty {
-    //            return AnyView(Section("Penalties") {
-    //                ForEach(Array(viewModel.selectedPenalties.enumerated()), id: \.offset) { index, penaltyID in
-    //                    if let penalty = mockPenalties.first(where: { $0.id == penaltyID }) {
-    //                        HStack {
-    //                            VStack(alignment: .leading) {
-    //                                Text(penalty.name)
-    //                                Text("\(penalty.points)")
-    //                                    .font(.caption)
-    //                                    .foregroundColor(.red)
-    //                            }
-    //                            Spacer()
-    //                            Button(action: { viewModel.removePenalty(at: index) }) {
-    //                                Image(systemName: "trash")
-    //                                    .foregroundColor(.red)
-    //                            }
-    //                        }
-    //                    }
-    //                }
-    //            })
-    //        } else {
-    //            return AnyView(EmptyView())
-    //        }
-    //    }
+    private var tricksSection: some View {
+        if !viewModel.selectedTricks.isEmpty {
+            return AnyView(Section("Tricks") {
+                ForEach(Array(viewModel.selectedTricks.enumerated()), id: \.offset) { index, trick in
+                    HStack {
+                        Text(trick.name)
+                        Spacer()
+                        Text("\(trick.points)")
+                        Button(action: { viewModel.removeTrick(at: index) }) {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
+            })
+        } else {
+            return AnyView(EmptyView())
+        }
+    }
     
+    private var ecpsSection: some View {
+        if !viewModel.selectedECPs.isEmpty {
+            return AnyView(Section("ECPs") {
+                ForEach(Array(viewModel.selectedECPs.enumerated()), id: \.offset) { index, ecp in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(ecp.name)
+                            Text(ecp.descriptionText)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Text("\(ecp.points)")
+                        Button(action: { viewModel.removeECP(at: index) }) {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
+            })
+        } else {
+            return AnyView(EmptyView())
+        }
+    }
+
+    private var penaltiesSection: some View {
+        if !viewModel.selectedPenalties.isEmpty {
+            return AnyView(Section("Penalties") {
+                ForEach(Array(viewModel.selectedPenalties.enumerated()), id: \.offset) { index, penalty in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(penalty.name)
+                            Text("\(penalty.points)")
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+                        Spacer()
+                        Button(action: { viewModel.removePenalty(at: index) }) {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
+            })
+        } else {
+            return AnyView(EmptyView())
+        }
+    }
+
     var body: some View {
         NavigationView {
             VStack {
                 Form {
                     headerSection
-                    if isFreeRange {
+                    if !isFreeRange {
                         lineWorthSection
                     }
-                    //                    tricksSection
-                    //                    ecpsSection
-                    //                    penaltiesSection
+                    tricksSection
+                    ecpsSection
+                    penaltiesSection
                 }
-                
+                // MARK: - Quick Action Buttons
                 HStack(spacing: 20) {
                     if !isFreeRange {
                         RoundScoreButton(title: "Line", systemImage: "mountain.2.fill") {
-                            viewModel.showLinePicker()
+                            isShowingLineWorthPicker = true
                         }
                     }
                     RoundScoreButton(title: "Trick", systemImage: "figure.skiing.downhill") {
-                        viewModel.showTrickPicker()
+                        isShowingTrickPicker = true
                     }
                     RoundScoreButton(title: "ECP", systemImage: "star.fill") {
-                        viewModel.showECPPicker()
+                        isShowingECPPicker = true
                     }
                     RoundScoreButton(title: "Penalty", systemImage: "exclamationmark.triangle.fill") {
-                        viewModel.showPenaltyPicker()
+                        isShowingPenaltyPicker = true
                     }
                 }
                 .padding(.horizontal)
@@ -190,43 +188,51 @@ struct ScoreEntryView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Claim") {
+                        print("Attempting to add score...")
                         let score = viewModel.addScore()
                         onScoreAdded(score)
                         dismiss()
                     }
                 }
             }
-            .sheet(isPresented: $viewModel.showingLineWorthPicker) {
+
+            // MARK: - Picker Sheets
+            .sheet(isPresented: $isShowingLineWorthPicker) {
                 LineWorthPickerView(
                     context: viewModel.context,
                     selectedLineWorth: viewModel.selectedLineScore?.lineWorth,
-                    selectedSnowLevel: SnowLevel(rawValue: viewModel.selectedLineScore?.snowLevel ?? "") ?? .medium
-                ) { lineWorth, snowLevel in
-                    viewModel.selectedLineScore = LineScore.create(
+                    selectedSnowLevel: viewModel.selectedLineScore?.snowLevel.flatMap(SnowLevel.init) ?? .medium
+                ) { selectedLineWorth, selectedSnowLevel in
+                    let newLineScore = LineScore.create(
                         in: viewModel.context,
-                        lineWorth: lineWorth,
-                        snowLevel: snowLevel.rawValue
+                        lineWorth: selectedLineWorth,
+                        snowLevel: selectedSnowLevel.rawValue
                     )
+                    viewModel.selectedLineScore = newLineScore
+                    isShowingLineWorthPicker = false
                 }
             }
-            .sheet(isPresented: $viewModel.showingTrickPicker) {
+            .sheet(isPresented: $isShowingTrickPicker) {
                 TrickBonusPickerView(
                     allTrickBonuses: viewModel.fetchTrickBonuses(),
                     selectedBonuses: $viewModel.selectedTricks
                 )
             }
-            .sheet(isPresented: $viewModel.showingECPPicker) {
+
+            .sheet(isPresented: $isShowingECPPicker) {
                 ECPPickerView(
                     allECPs: viewModel.fetchECPs(),
                     selectedECPs: $viewModel.selectedECPs
                 )
             }
-            .sheet(isPresented: $viewModel.showingPenaltyPicker) {
+
+            .sheet(isPresented: $isShowingPenaltyPicker) {
                 PenaltyPickerView(
                     allPenalties: viewModel.fetchPenalties(),
                     selectedPenalties: $viewModel.selectedPenalties
                 )
-            }        }
+            }
+        }
     }
 }
 
@@ -234,7 +240,7 @@ struct RoundScoreButton: View {
     let title: String
     let systemImage: String
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             VStack {

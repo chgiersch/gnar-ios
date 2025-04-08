@@ -4,7 +4,8 @@
         <attribute name="abbreviation" attributeType="String"/>
         <attribute name="descriptionText" attributeType="String"/>
         <attribute name="frequency" attributeType="String"/>
-        <attribute name="id" attributeType="String"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="idDescriptor" optional="YES" attributeType="String"/>
         <attribute name="name" attributeType="String"/>
         <attribute name="points" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="mountain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Mountain" inverseName="ecps" inverseEntity="Mountain"/>
@@ -14,14 +15,14 @@
         <attribute name="points" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="ecp" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ECP"/>
-        <relationship name="parentScore" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Score" inverseName="ecpsScores" inverseEntity="Score"/>
+        <relationship name="parentScore" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Score" inverseName="ecpScores" inverseEntity="Score"/>
     </entity>
     <entity name="GameSession" representedClassName="GameSession" syncable="YES">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="mountainName" optional="YES" attributeType="String"/>
         <attribute name="startDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="players" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Player" inverseName="gameSessions" inverseEntity="Player"/>
-        <relationship name="scores" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Score"/>
+        <relationship name="scores" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Score" inverseName="gameSession" inverseEntity="Score"/>
     </entity>
     <entity name="Item" representedClassName="Item" syncable="YES" codeGenerationType="class">
         <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
@@ -30,6 +31,7 @@
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="snowLevel" optional="YES" attributeType="String"/>
         <relationship name="lineWorth" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LineWorth"/>
+        <relationship name="score" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Score" inverseName="lineScore" inverseEntity="Score"/>
     </entity>
     <entity name="LineWorth" representedClassName="LineWorth" syncable="YES">
         <attribute name="area" attributeType="String"/>
@@ -38,7 +40,7 @@
         <attribute name="basePointsMedium" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="basePointsSource" attributeType="String"/>
         <attribute name="descriptionText" optional="YES" attributeType="String"/>
-        <attribute name="id" attributeType="String"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="name" attributeType="String"/>
         <relationship name="mountain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Mountain" inverseName="lineWorths" inverseEntity="Mountain"/>
     </entity>
@@ -54,7 +56,8 @@
     <entity name="Penalty" representedClassName="Penalty" syncable="YES">
         <attribute name="abbreviation" attributeType="String"/>
         <attribute name="descriptionText" attributeType="String"/>
-        <attribute name="id" attributeType="String"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="idDescriptor" optional="YES" attributeType="String"/>
         <attribute name="name" attributeType="String"/>
         <attribute name="points" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="mountain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Mountain" inverseName="penalties" inverseEntity="Mountain"/>
@@ -63,7 +66,7 @@
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="points" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <relationship name="parentScore" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Score" inverseName="penaltiesScores" inverseEntity="Score"/>
+        <relationship name="parentScore" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Score" inverseName="penaltyScores" inverseEntity="Score"/>
         <relationship name="penalty" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Penalty"/>
     </entity>
     <entity name="Player" representedClassName="Player" syncable="YES">
@@ -78,15 +81,17 @@
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="playerID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <relationship name="ecpsScores" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ECPScore" inverseName="parentScore" inverseEntity="ECPScore"/>
-        <relationship name="lineScores" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="LineScore"/>
-        <relationship name="penaltiesScores" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="PenaltyScore" inverseName="parentScore" inverseEntity="PenaltyScore"/>
+        <relationship name="ecpScores" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ECPScore" inverseName="parentScore" inverseEntity="ECPScore"/>
+        <relationship name="gameSession" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="GameSession" inverseName="scores" inverseEntity="GameSession"/>
+        <relationship name="lineScore" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LineScore" inverseName="score" inverseEntity="LineScore"/>
+        <relationship name="penaltyScores" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="PenaltyScore" inverseName="parentScore" inverseEntity="PenaltyScore"/>
         <relationship name="trickBonusScores" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TrickBonusScore" inverseName="parentScore" inverseEntity="TrickBonusScore"/>
     </entity>
     <entity name="TrickBonus" representedClassName="TrickBonus" syncable="YES">
         <attribute name="category" optional="YES" attributeType="String"/>
         <attribute name="descriptionText" attributeType="String"/>
-        <attribute name="id" attributeType="String"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="idDescriptor" optional="YES" attributeType="String"/>
         <attribute name="name" attributeType="String"/>
         <attribute name="points" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="requiresVerification" attributeType="Boolean" usesScalarValueType="YES"/>

@@ -10,7 +10,7 @@ import CoreData
 
 @objc(LineWorth)
 public class LineWorth: NSManagedObject, Identifiable, Decodable {
-    @NSManaged public var id: String
+    @NSManaged public var id: UUID
     @NSManaged public var name: String
     @NSManaged public var descriptionText: String
     @NSManaged public var basePointsSource: String
@@ -21,7 +21,7 @@ public class LineWorth: NSManagedObject, Identifiable, Decodable {
     @NSManaged public var mountain: Mountain?
     
     enum CodingKeys: String, CodingKey {
-        case name, area, basePoints
+        case id, name, area, basePoints
     }
 
     enum BasePointsKeys: String, CodingKey {
@@ -36,7 +36,7 @@ public class LineWorth: NSManagedObject, Identifiable, Decodable {
         let entity = NSEntityDescription.entity(forEntityName: "LineWorth", in: context)!
         self.init(entity: entity, insertInto: context)
 
-        self.id = UUID().uuidString
+        self.id = UUID()
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         self.name = try container.decode(String.self, forKey: .name)
@@ -74,7 +74,7 @@ extension LineWorth {
     @nonobjc public class func fetchRequest() -> NSFetchRequest<LineWorth> {
         return NSFetchRequest<LineWorth>(entityName: "LineWorth")
     }
-    
+
     var effectiveBasePoints: Int32 {
         if isFlatScored {
             return basePointsMedium?.int32Value ?? 0

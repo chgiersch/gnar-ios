@@ -9,36 +9,43 @@
 import SwiftUI
 
 struct PenaltyPickerView: View {
+    @StateObject private var viewModel: PenaltyPickerViewModel
     @Environment(\.dismiss) private var dismiss
-    let allPenalties: [Penalty]
-    @Binding var selectedPenalties: [String]
-    
+    @Binding var selectedPenalties: [Penalty]
+
+    init(allPenalties: [Penalty], selectedPenalties: Binding<[Penalty]>) {
+        _viewModel = StateObject(wrappedValue: PenaltyPickerViewModel(
+            allPenalties: allPenalties,
+            selectedPenalties: selectedPenalties.wrappedValue
+        ))
+        _selectedPenalties = selectedPenalties
+    }
+
     var body: some View {
         NavigationView {
-            List(allPenalties) { penalty in
+            List(viewModel.allPenalties) { penalty in
                 HStack {
                     Text(penalty.name)
                     Spacer()
                     Text("\(penalty.points)")
-                    if selectedPenalties.contains(penalty.id) {
+                    if viewModel.selectedPenalties.contains(where: { $0.id == penalty.id }) {
                         Image(systemName: "checkmark")
                             .foregroundColor(.blue)
                     }
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    if selectedPenalties.contains(penalty.id) {
-                        selectedPenalties.removeAll { $0 == penalty.id }
-                    } else {
-                        selectedPenalties.append(penalty.id)
-                    }
+                    viewModel.toggle(penalty)
                 }
             }
             .navigationTitle("Select Penalties")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+                    Button("Done") {
+                        selectedPenalties = viewModel.selectedPenalties
+                        dismiss()
+                    }
                 }
             }
         }

@@ -30,11 +30,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		750A81392D97466800418357 /* GNAR */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = GNAR;
-			sourceTree = "<group>";
-		};
 		750A814F2D97466B00418357 /* GNARTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = GNARTests;
@@ -43,6 +38,11 @@
 		750A81592D97466B00418357 /* GNARUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = GNARUITests;
+			sourceTree = "<group>";
+		};
+		753F7E3A2DA48736000F77CB /* GNAR */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = GNAR;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -75,7 +75,7 @@
 		750A812E2D97466800418357 = {
 			isa = PBXGroup;
 			children = (
-				750A81392D97466800418357 /* GNAR */,
+				753F7E3A2DA48736000F77CB /* GNAR */,
 				750A814F2D97466B00418357 /* GNARTests */,
 				750A81592D97466B00418357 /* GNARUITests */,
 				750A81382D97466800418357 /* Products */,
@@ -108,7 +108,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				750A81392D97466800418357 /* GNAR */,
+				753F7E3A2DA48736000F77CB /* GNAR */,
 			);
 			name = GNAR;
 			packageProductDependencies = (

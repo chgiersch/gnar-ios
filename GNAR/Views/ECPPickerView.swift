@@ -11,9 +11,9 @@ import SwiftUI
 struct ECPPickerView: View {
     @StateObject private var viewModel: ECPPickerViewModel
     @Environment(\.dismiss) private var dismiss
-    @Binding var selectedECPs: [String]
+    @Binding var selectedECPs: [ECP]
     
-    init(allECPs: [ECP], selectedECPs: Binding<[String]>) {
+    init(allECPs: [ECP], selectedECPs: Binding<[ECP]>) {
         _viewModel = StateObject(wrappedValue: ECPPickerViewModel(
             allECPs: allECPs,
             selectedECPs: selectedECPs.wrappedValue
@@ -33,7 +33,7 @@ struct ECPPickerView: View {
                     }
                     Spacer()
                     Text("\(ecp.points)")
-                    if viewModel.selectedECPs.contains(ecp.id) {
+                    if viewModel.selectedECPs.contains(where: { $0.id == ecp.id }) {
                         Image(systemName: "checkmark")
                             .foregroundColor(.blue)
                     }

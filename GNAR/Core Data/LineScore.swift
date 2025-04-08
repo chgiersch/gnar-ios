@@ -14,7 +14,8 @@ public class LineScore: NSManagedObject, Identifiable {
     @NSManaged public var id: UUID?
     @NSManaged public var lineWorth: LineWorth?
     @NSManaged public var snowLevel: String?
-    
+    @NSManaged public var score: Score?
+
     public var points: Int {
         switch SnowLevel(rawValue: snowLevel ?? "") {
         case .low:

@@ -9,60 +9,56 @@
 import SwiftUI
 
 struct TrickBonusPickerView: View {
+    @StateObject private var viewModel: TrickBonusPickerViewModel
     @Environment(\.dismiss) private var dismiss
-    let allTrickBonuses: [TrickBonus]
     @Binding var selectedBonuses: [TrickBonus]
-    
-    @State private var newTrickBonuses: [TrickBonus] = []
-    
+
+    init(allTrickBonuses: [TrickBonus], selectedBonuses: Binding<[TrickBonus]>) {
+        _viewModel = StateObject(wrappedValue: TrickBonusPickerViewModel(
+            allTrickBonuses: allTrickBonuses,
+            selectedBonuses: selectedBonuses.wrappedValue
+        ))
+        _selectedBonuses = selectedBonuses
+    }
+
     var body: some View {
         NavigationView {
-            List {
-                ForEach(allTrickBonuses) { bonus in
-                    HStack {
-                        Text("\(bonus.name) (+\(bonus.points))")
-                        Spacer()
-                        if newTrickBonuses.contains(where: { $0.id == bonus.id }) {
-                            Image(systemName: "checkmark")
-                                .foregroundColor(.blue)
-                        }
+            List(viewModel.allTrickBonuses) { bonus in
+                HStack {
+                    Text("\(bonus.name) (+\(bonus.points))")
+                    Spacer()
+                    if viewModel.newTrickBonuses.contains(where: { $0.id == bonus.id }) {
+                        Image(systemName: "checkmark")
+                            .foregroundColor(.blue)
                     }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        toggle(bonus)
-                    }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    viewModel.toggle(bonus)
                 }
             }
             .navigationTitle("Trick Bonuses")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add") {
-                        selectedBonuses.append(contentsOf: newTrickBonuses)
+                        viewModel.confirmSelection()
+                        selectedBonuses = viewModel.selectedBonuses
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
+                        viewModel.cancelSelection()
                         dismiss()
                     }
                 }
             }
         }
         .onAppear {
-            // Clear selection to allow duplicates on every open
-            newTrickBonuses = []
-        }
-    }
-    
-    private func toggle(_ bonus: TrickBonus) {
-        if newTrickBonuses.contains(where: { $0.id == bonus.id }) {
-            newTrickBonuses.removeAll(where: { $0.id == bonus.id })
-        } else {
-            newTrickBonuses.append(bonus)
+            viewModel.newTrickBonuses = []
         }
     }
 }
-
 #Preview {
     
 }

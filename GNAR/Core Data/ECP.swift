@@ -11,7 +11,8 @@ import CoreData
 
 @objc(ECP)
 public class ECP: NSManagedObject, Identifiable, Decodable {
-    @NSManaged public var id: String
+    @NSManaged public var id: UUID
+    @NSManaged public var idDescriptor: String?
     @NSManaged public var name: String
     @NSManaged public var descriptionText: String
     @NSManaged public var points: Int32
@@ -39,7 +40,8 @@ public class ECP: NSManagedObject, Identifiable, Decodable {
         self.init(entity: entity, insertInto: managedObjectContext)
         
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.id = try container.decode(String.self, forKey: .id)
+        self.id = UUID()
+        self.idDescriptor = try container.decode(String.self, forKey: .id)
         self.name = try container.decode(String.self, forKey: .name)
         self.descriptionText = try container.decode(String.self, forKey: .descriptionText)
         self.points = try container.decode(Int32.self, forKey: .points)
@@ -49,6 +51,7 @@ public class ECP: NSManagedObject, Identifiable, Decodable {
         print("ECP decoded: \(self.name)")
     }
 }
+
 extension ECP {
     @nonobjc public class func fetchRequest() -> NSFetchRequest<ECP> {
         return NSFetchRequest<ECP>(entityName: "ECP")

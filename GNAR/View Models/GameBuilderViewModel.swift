@@ -26,39 +26,34 @@ class GameBuilderViewModel: ObservableObject {
         return result
     }
 
-    private let context: NSManagedObjectContext
+    private let coreData: CoreDataContexts
 
-    init(context: NSManagedObjectContext) {
-        self.context = context
-        fetchMountains()
+    init(coreData: CoreDataContexts) {
+        self.coreData = coreData
+        Task {
+            await fetchMountains()
+        }
     }
 
-    func fetchMountains() {
+    func fetchMountains() async {
         let request: NSFetchRequest<Mountain> = Mountain.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(keyPath: \Mountain.name, ascending: true)]
 
         do {
-            let fetched = try context.fetch(request)
+            let fetched = try coreData.viewContext.fetch(request)
             print("🗻 Found \(mountains.count) mountains")
 
-            if let global = fetched.first(where: { $0.name == "Global" }) {
-                global.name = "Free Range"
-                self.globalMountain = global
+            await MainActor.run {
+                if let global = fetched.first(where: { $0.name == "Global" }) {
+                    global.name = "Free Range"
+                    self.globalMountain = global
+                }
+
+                self.userMountains = fetched.filter { $0 != self.globalMountain }
             }
-
-            self.userMountains = fetched.filter { $0 != self.globalMountain }
-
         } catch {
             print("❌ Failed to fetch mountains: \(error)")
         }
-    }
-
-    func addPlayer() {
-        playerNames.append("")
-    }
-
-    func removePlayer(at index: Int) {
-        playerNames.remove(at: index)
     }
 
     func createGameSession() -> GameSession? {
@@ -66,13 +61,14 @@ class GameBuilderViewModel: ObservableObject {
             return nil
         }
 
-        let gameSession = GameSession(context: context)
+        let gameSession = GameSession(context: coreData.viewContext)
         gameSession.mountainName = selectedMountain.name
         gameSession.id = UUID()
         gameSession.startDate = Date()
 
         let players = playerNames.map { name -> Player in
-            let player = Player(context: context)
+            let player = Player(context: coreData.viewContext)
+            player.id = UUID()
             player.name = name
             return player
         }
@@ -80,13 +76,26 @@ class GameBuilderViewModel: ObservableObject {
         gameSession.players = NSSet(array: players)
 
         do {
-            try context.save()
+            try coreData.viewContext.save()
             self.createdGameSession = gameSession
             return gameSession
         } catch {
-            context.rollback()
+            coreData.viewContext.rollback()
             print("❌ Failed to save game session: \(error)")
             return nil
         }
+    }
+
+    func bindingForPlayer(at index: Int) -> Binding<String> {
+        Binding(
+            get: {
+                guard self.playerNames.indices.contains(index) else { return "" }
+                return self.playerNames[index]
+            },
+            set: { newValue in
+                guard self.playerNames.indices.contains(index) else { return }
+                self.playerNames[index] = newValue
+            }
+        )
     }
 }

@@ -9,45 +9,46 @@ import SwiftUI
 import CoreData
 
 struct ContentView: View {
-    @StateObject private var tabCoordinator: TabCoordinator
-    @StateObject private var gamesViewModel: GamesViewModel
+    @EnvironmentObject var appState: AppState
+    @ObservedObject var viewModel: ContentViewModel
     
-    init(viewContext: NSManagedObjectContext, backgroundContext: NSManagedObjectContext) {
-        _tabCoordinator = StateObject(wrappedValue: TabCoordinator(viewContext: viewContext, backgroundContext: backgroundContext))
-        _gamesViewModel = StateObject(wrappedValue: GamesViewModel(viewContext: viewContext, backgroundContext: backgroundContext))
-    }
-
     var body: some View {
-        NavigationStack {
-            TabView(selection: $tabCoordinator.selectedTab) {
-                HomeView()
-                    .tabItem {
-                        Label("Home", systemImage: "house")
+        Group {
+            ZStack {
+                TabView(selection: $viewModel.selectedTab) {
+                    ForEach([ContentViewModel.Tab.home, .games, .profile], id: \.self) { tab in
+                        tabView(for: tab)
+                            .tag(tab)
+                            .tabItem {
+                                switch tab {
+                                case .home: Label("Home", systemImage: "house")
+                                case .games: Label("Games", systemImage: "gamecontroller")
+                                case .profile: Label("Profile", systemImage: "person.circle")
+                                }
+                            }
                     }
-                    .tag(TabCoordinator.Tab.home)
-                
-                GamesView(viewModel: gamesViewModel)
-                    .tabItem {
-                        Label("Games", systemImage: "gamecontroller")
-                    }
-                    .tag(TabCoordinator.Tab.games)
-                
-                
-                ProfileView()
-                    .tabItem {
-                        Label("Profile", systemImage: "person.circle")
-                    }
-                    .tag(TabCoordinator.Tab.profile)
-            }
-            .onAppear {
-                Task {
-                    await gamesViewModel.loadIfNeeded()
                 }
             }
+        }
+    }
+    
+    @ViewBuilder
+    private func tabView(for tab: ContentViewModel.Tab) -> some View {
+        switch tab {
+        case .home:
+            NavigationStack { HomeView() }
+            
+        case .games:
+            NavigationStack {
+                GamesView(viewModel: viewModel.gamesViewModel)
+            }
+            
+        case .profile:
+            NavigationStack { ProfileView() }
         }
     }
 }
 
 #Preview {
-//    ContentView()
+    //    ContentView()
 }

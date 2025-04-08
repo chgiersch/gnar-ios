@@ -27,6 +27,14 @@ public class GameSession: NSManagedObject, Identifiable {
         return Array(set)
     }
     
+    override public func awakeFromInsert() {
+        super.awakeFromInsert()
+        self.id = UUID()
+        self.startDate = Date()
+        self.players = NSSet()
+        self.scores = NSSet()
+        print("🆕 New GameSession created with ID: \(self.id?.uuidString ?? "unknown")")
+    }
 }
 
 extension GameSession {
