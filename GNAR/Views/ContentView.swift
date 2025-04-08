@@ -13,38 +13,35 @@ struct ContentView: View {
     @ObservedObject var viewModel: ContentViewModel
     
     var body: some View {
-        Group {
-            ZStack {
-                TabView(selection: $viewModel.selectedTab) {
-                    ForEach([ContentViewModel.Tab.home, .games, .profile], id: \.self) { tab in
-                        tabView(for: tab)
-                            .tag(tab)
-                            .tabItem {
-                                switch tab {
-                                case .home: Label("Home", systemImage: "house")
-                                case .games: Label("Games", systemImage: "gamecontroller")
-                                case .profile: Label("Profile", systemImage: "person.circle")
-                                }
-                            }
+        NavigationStack {
+            TabView(selection: $viewModel.selectedTab) {
+                HomeView()
+                    .tag(ContentViewModel.Tab.home)
+                    .tabItem {
+                        Label("Home", systemImage: "house")
                     }
+                
+                GamesView(viewModel: viewModel.gamesViewModel)
+                    .tag(ContentViewModel.Tab.games)
+                    .tabItem {
+                        Label("Games", systemImage: "gamecontroller")
+                    }
+                
+                ProfileView()
+                    .tag(ContentViewModel.Tab.profile)
+                    .tabItem {
+                        Label("Profile", systemImage: "person.circle")
+                    }
+            }
+            .onAppear {
+                print("🟢 ContentView appeared.")
+            }
+            .onChange(of: viewModel.selectedTab) { oldTab, newTab in
+                print("🔄 Tab changed from \(oldTab) to \(newTab)")
+                if newTab == .games {
+                    print("📦 Games tab selected. Session count: \(viewModel.gamesViewModel.sessionPreviews.count)")
                 }
             }
-        }
-    }
-    
-    @ViewBuilder
-    private func tabView(for tab: ContentViewModel.Tab) -> some View {
-        switch tab {
-        case .home:
-            NavigationStack { HomeView() }
-            
-        case .games:
-            NavigationStack {
-                GamesView(viewModel: viewModel.gamesViewModel)
-            }
-            
-        case .profile:
-            NavigationStack { ProfileView() }
         }
     }
 }

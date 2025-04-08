@@ -10,66 +10,69 @@ import SwiftUI
 import CoreData
 
 struct GamesView: View {
+    @EnvironmentObject var appState: AppState
     @ObservedObject var viewModel: GamesViewModel
-    @State private var selectedPreview: GameSessionPreview?
+    @EnvironmentObject var contentViewModel: ContentViewModel
+    @State private var showingGameBuilder = false
     
     var body: some View {
-        ZStack {
-            VStack {
-                Text("Games")
-                    .font(.largeTitle.bold())
-                    .padding(.top)
-                    .padding(.horizontal)
+        Form {
+            /// 📦 Title section
+            Section {
+                Text("My Games")
+                    .font(.title2.bold())
+            }
 
-                Divider()
-
-                List {
-                    if viewModel.sessionPreviews.isEmpty {
-                        Text("No games yet.")
-                            .foregroundColor(.gray)
-                            .padding()
-                    } else {
-                        ForEach(viewModel.sessionPreviews) { session in
-                            Button {
-                                selectedPreview = session
-                            } label: {
-                                sessionRow(session)
-                            }
+            /// 🕹️ Session list
+            Section(header: Text("Game Sessions")) {
+                if viewModel.sessionPreviews.isEmpty {
+                    Text("No games yet.")
+                        .foregroundColor(.gray)
+                } else {
+                    ForEach(viewModel.sessionPreviews) { session in
+                        Button {
+                            contentViewModel.loadSession(by: session.id)
+                        } label: {
+                            sessionRow(session)
                         }
                     }
                 }
             }
-            .listStyle(.plain)
-            
-            if viewModel.isLoading {
-                loadingState(text: "Loading games...")
-                    .background(.thinMaterial)
+
+            /// ➕ New Game Button
+            Section {
+                Button(action: {
+                    viewModel.showingGameBuilder = true
+                }) {
+                    HStack {
+                        Spacer()
+                        Text("Start New Game")
+                            .font(.headline)
+                            .padding(.vertical, 8)
+                        Spacer()
+                    }
+                }
             }
         }
-        .task {
-            await viewModel.loadIfNeeded()
-        }
         .sheet(isPresented: $viewModel.showingGameBuilder) {
-            GameBuilderView(coreData: viewModel.coreData) { newSession in
+            GameBuilderView(
+                coreData: viewModel.coreData,
+                mountains: contentViewModel.mountainPreviews
+            ) { newSession in
+                contentViewModel.activeSession = newSession
                 Task {
                     await viewModel.loadIfNeeded()
                 }
             }
         }
-        .overlay(alignment: .bottom) {
-            Button(action: {
-                viewModel.showingGameBuilder = true
-            }) {
-                Text("Start New Game")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                    .padding(.horizontal)
+        .fullScreenCover(item: $contentViewModel.activeSession) { session in
+            GameDashboardView(session: session)
+        }
+        .overlay {
+            if viewModel.isLoading {
+                loadingState(text: "Loading games...")
+                    .background(.thinMaterial)
             }
-            .padding(.bottom, 12)
         }
     }
 

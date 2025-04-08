@@ -10,7 +10,6 @@ import SwiftUI
 import CoreData
 
 class GamesViewModel: ObservableObject {
-    @Published var sessions: [GameSession] = []
     @Published var activeSession: GameSession?
     @Published var showingGameBuilder = false
     @Published var selectedMountain: Mountain?
@@ -43,6 +42,7 @@ class GamesViewModel: ObservableObject {
     @MainActor
     func loadSessions() async {
         self.isLoading = true
+        print("🔄 Fetching session previews...")
         do {
             let previews = try await sessionFetcher.fetchPreviews(context: coreData.backgroundContext)
             await MainActor.run {
@@ -56,6 +56,7 @@ class GamesViewModel: ObservableObject {
             }
         }
         self.isLoading = false
+        print("🔄 Finished fetching session previews.")
     }
 
     func loadSession(by id: UUID) -> GameSession? {

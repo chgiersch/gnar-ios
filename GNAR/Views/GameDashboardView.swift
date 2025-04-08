@@ -17,7 +17,7 @@ struct GameDashboardView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 List {
                     LeaderboardSection(players: viewModel.sortedPlayers)
@@ -28,7 +28,7 @@ struct GameDashboardView: View {
                 .task { await viewModel.loadScores() }
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("End") { dismiss() }
+                        Button("Exit") { dismiss() }
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {

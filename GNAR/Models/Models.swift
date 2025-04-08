@@ -48,3 +48,9 @@ struct GameSessionPreview: Identifiable {
         }
     }
 }
+
+struct MountainPreview: Identifiable, Equatable {
+    let id: String
+    let name: String
+    let isGlobal: Bool
+}

@@ -35,16 +35,18 @@ final class GameDashboardViewModel: ObservableObject {
 
     func loadScores() async {
         let context = persistenceController.container.viewContext
-
+        
         do {
-            print("🔄 Fetching scores from Core Data...")
+            let start = Date()
+            print("🔄 Fetching scores for session \(session.id?.uuidString ?? "unknown")")
             let request: NSFetchRequest<Score> = Score.fetchRequest()
             request.sortDescriptors = [NSSortDescriptor(keyPath: \Score.timestamp, ascending: false)]
             let rawScores = try await context.perform {
                 try context.fetch(request)
             }
-            print("✅ Fetched \(rawScores.count) scores")
-            
+            let end = Date()
+            print("✅ Fetched \(rawScores.count) scores in \(end.timeIntervalSince(start)) seconds.")
+
             self.scores = rawScores
             self.scoreSummaries = rawScores.map { score in
                 let id = score.id ?? UUID()

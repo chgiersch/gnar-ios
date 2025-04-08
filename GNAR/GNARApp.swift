@@ -28,6 +28,7 @@ struct GNARApp: App {
                         .transition(.opacity)
                         .environment(\.managedObjectContext, coreData.viewContext)
                         .environmentObject(appState)
+                        .environmentObject(viewModel)
                 } else {
                     LoadingScreen()
                         .transition(.opacity)
@@ -37,10 +38,12 @@ struct GNARApp: App {
 //#if DEBUG
 //                await resetDebugStateIfNeeded()
 //#endif
+                print("🟢 GNARApp started. Checking if mountains are seeded.")
                 if UserDefaults.standard.hasSeededMountains {
                     await MainActor.run {
                         self.contentViewModel = ContentViewModel(coreData: coreData)
                         appState.isReady = true
+                        print("✅ Mountains already seeded. App is ready.")
                     }
                 } else {
                     await loadInitialSeedData()
@@ -61,11 +64,13 @@ struct GNARApp: App {
 
     // MARK: - Data Seeding
     func loadInitialSeedData() async {
+        print("🚀 Starting initial seed data load.")
         if UserDefaults.standard.hasSeededMountains {
             await MainActor.run {
                 self.contentViewModel = ContentViewModel(coreData: coreData)
                 appState.mountainSeedingComplete = true
                 appState.isReady = true
+                print("✅ Mountains already seeded. App is ready.")
             }
             return
         }
@@ -91,6 +96,7 @@ struct GNARApp: App {
             appState.mountainSeedingComplete = true
             appState.isReady = true
             UserDefaults.standard.hasSeededMountains = true
+            print("✅ Initial seed data loaded. App is ready.")
         }
     }
 

@@ -11,55 +11,35 @@ import SwiftUI
 import CoreData
 
 class GameBuilderViewModel: ObservableObject {
-    @Published var selectedMountain: Mountain?
-    @Published var globalMountain: Mountain?
-    @Published var userMountains: [Mountain] = []
+    @Published var mountains: [MountainPreview] = []
+    @Published var selectedMountain: MountainPreview?
     @Published var playerNames: [String] = [""]
     @Published var createdGameSession: GameSession?
 
-    var mountains: [Mountain] {
-        var result = [Mountain]()
-        if let global = globalMountain {
-            result.append(global)
-        }
-        result.append(contentsOf: userMountains)
-        return result
-    }
-
     private let coreData: CoreDataContexts
 
-    init(coreData: CoreDataContexts) {
+    init(coreData: CoreDataContexts, mountains: [MountainPreview]) {
         self.coreData = coreData
-        Task {
-            await fetchMountains()
-        }
+        self.mountains = mountains
+        self.selectedMountain = mountains.first // assumes global is first
     }
-
-    func fetchMountains() async {
-        let request: NSFetchRequest<Mountain> = Mountain.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \Mountain.name, ascending: true)]
-
-        do {
-            let fetched = try coreData.viewContext.fetch(request)
-            print("🗻 Found \(mountains.count) mountains")
-
-            await MainActor.run {
-                if let global = fetched.first(where: { $0.name == "Global" }) {
-                    global.name = "Free Range"
-                    self.globalMountain = global
-                }
-
-                self.userMountains = fetched.filter { $0 != self.globalMountain }
-            }
-        } catch {
-            print("❌ Failed to fetch mountains: \(error)")
-        }
+    
+    func addPlayer() {
+        playerNames.append("")
+    }
+    
+    func removePlayer(at index: Int) {
+        guard playerNames.indices.contains(index) else { return }
+        playerNames.remove(at: index)
     }
 
     func createGameSession() -> GameSession? {
+        
         guard let selectedMountain = selectedMountain, !playerNames.isEmpty else {
             return nil
         }
+        print("🎯 Attempting to create session for mountain: \(selectedMountain.name)")
+        print("👥 Player names: \(playerNames)")
 
         let gameSession = GameSession(context: coreData.viewContext)
         gameSession.mountainName = selectedMountain.name
