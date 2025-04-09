@@ -19,11 +19,11 @@ public class LineScore: NSManagedObject, Identifiable {
     public var points: Int {
         switch SnowLevel(rawValue: snowLevel ?? "") {
         case .low:
-            return Int(truncating: lineWorth?.basePointsLow ?? 0)
+            return Int(truncating: lineWorth?.basePointsHigh ?? 0)
         case .medium:
             return Int(truncating: lineWorth?.basePointsMedium ?? 0)
         case .high:
-            return Int(truncating: lineWorth?.basePointsHigh ?? 0)
+            return Int(truncating: lineWorth?.basePointsLow ?? 0)
         case .none:
             return 0
         }
