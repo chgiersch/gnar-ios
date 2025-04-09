@@ -14,38 +14,25 @@ struct ScoreSummary: Identifiable {
     let points: Int
 }
 
-struct GameSessionPreview: Identifiable {
+struct GameSessionPreview: Identifiable, Equatable {
     let id: UUID
     let mountainName: String
     let date: Date
     let playerCount: Int
-    let playerNames: [String]
 
     init?(from session: GameSession) {
         guard
             let id = session.id,
-            let date = session.startDate
+            let date = session.startDate,
+            !session.mountainName.isEmpty
         else {
             return nil
         }
 
         self.id = id
-        
-        guard session.mountainName.isEmpty == false else {
-            print("❌ Skipping GameSession with empty mountainName: \(session.id?.uuidString ?? "unknown")")
-            return nil
-        }
         self.mountainName = session.mountainName
-
         self.date = date
-
-        if let players = session.players as? Set<Player> {
-            self.playerNames = players.map { $0.name }
-            self.playerCount = players.count
-        } else {
-            self.playerNames = []
-            self.playerCount = 0
-        }
+        self.playerCount = (session.players as? Set<Player>)?.count ?? 0
     }
 }
 

@@ -43,10 +43,13 @@ struct GNARApp: App {
                     await MainActor.run {
                         self.contentViewModel = ContentViewModel(coreData: coreData)
                         appState.isReady = true
-                        print("✅ Mountains already seeded. App is ready.")
+                        print("✅ Mountains already seeded. App is ready.", Date())
                     }
                 } else {
+                    let seedStart = Date()
                     await loadInitialSeedData()
+                    let seedEnd = Date()
+                    print("⏱ Mountain seeding duration: \(seedEnd.timeIntervalSince(seedStart))s")
                 }
             }
             .animation(.easeInOut(duration: 0.4), value: appState.isReady)
