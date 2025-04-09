@@ -21,26 +21,51 @@ struct ECPPickerView: View {
         _selectedECPs = selectedECPs
     }
     
+    enum ECPFrequency: String, CaseIterable {
+        case daily = "Daily"
+        case yearly = "Yearly"
+        case unlimited = "Unlimited"
+    }
+        
+    @State private var selectedFrequency: ECPFrequency = .daily
+
+    var filteredECPs: [ECP] {
+        viewModel.allECPs.filter { ecp in
+            (ecp.frequency).localizedCaseInsensitiveCompare(selectedFrequency.rawValue) == .orderedSame
+        }
+    }
+
+    
     var body: some View {
         NavigationView {
-            List(viewModel.allECPs) { ecp in
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(ecp.name)
-                        Text(ecp.descriptionText)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    Spacer()
-                    Text("\(ecp.points)")
-                    if viewModel.selectedECPs.contains(where: { $0.id == ecp.id }) {
-                        Image(systemName: "checkmark")
-                            .foregroundColor(.blue)
+            VStack {
+                Picker("Frequency", selection: $selectedFrequency) {
+                    ForEach(ECPFrequency.allCases, id: \.self) { freq in
+                        Text(freq.rawValue).tag(freq)
                     }
                 }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    viewModel.toggle(ecp)
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+
+                List(filteredECPs) { ecp in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(ecp.name)
+                            Text(ecp.descriptionText)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Text("\(ecp.points)")
+                        if viewModel.selectedECPs.contains(where: { $0.id == ecp.id }) {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        viewModel.toggle(ecp)
+                    }
                 }
             }
             .navigationTitle("Select ECPs")
