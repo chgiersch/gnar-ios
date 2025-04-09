@@ -20,8 +20,9 @@ struct GameDashboardView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 List {
-                    LeaderboardSection(players: viewModel.sortedPlayers)
-                    ScoreHistorySection(scores: viewModel.scores)
+                    LeaderboardSection(summaries: viewModel.leaderboardSummaries,
+                                       selectedPlayer: $viewModel.selectedPlayer)
+                    ScoreHistorySection(scores: viewModel.filteredScores)
                 }
                 .navigationTitle("Game: \(viewModel.session.mountainName)")
                 .navigationBarTitleDisplayMode(.inline)
@@ -40,36 +41,60 @@ struct GameDashboardView: View {
                     }
                 }
                 .sheet(isPresented: $viewModel.showingScoreEntry) {
-                    ScoreEntryView(
-                        playerName: "You",
-                        session: viewModel.session,
-                        context: viewModel.persistenceController.container.viewContext,
-                        isFreeRange: viewModel.session.mountainName == "Free Range"
-                    ) { newScore in
-                        viewModel.addScore(newScore)
+                    if let selectedPlayer = viewModel.selectedPlayer {
+                        let selectedPlayerID = selectedPlayer.objectID
+                        ScoreEntryView(
+                            selectedPlayerID: .constant(selectedPlayerID), /// not ideal for updating, but safe
+                            allPlayers: viewModel.sortedPlayers,
+                            session: viewModel.session,
+                            context: viewModel.persistenceController.container.viewContext,
+                            isFreeRange: viewModel.session.mountainName == "Free Range"
+                        ) { newScore in
+                            viewModel.addScore(newScore)
+                        }
                     }
                 }
             }
         }
     }
 }
+
 struct LeaderboardSection: View {
-    let players: Set<Player>
-    
+    let summaries: [LeaderboardSummary]
+    @Binding var selectedPlayer: Player?
+
     var body: some View {
         Section("Leaderboard") {
-            ForEach(Array(players)) { player in
-                VStack(alignment: .leading) {
-                    Text(player.name)
-                        .font(.headline)
+            ForEach(summaries) { summary in
+                let player = summary.player
+                Button(action: {
+                    selectedPlayer = player
+                }) {
                     HStack {
-                        Text("GNAR: \(player.gnarScore)")
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(player.name)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+
+                            HStack(spacing: 12) {
+                                Label("GNAR: \(summary.gnarScore)", systemImage: "sparkles")
+                                Spacer()
+                                Label("Pro: \(summary.proScore)", systemImage: "bolt.fill")
+                            }
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        }
+
                         Spacer()
-                        Text("Pro: \(player.proScore)")
                     }
-                    .font(.subheadline)
+                    .padding(.vertical, 4)
+                    .padding(.horizontal)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(selectedPlayer?.id == player.id ? Color.accentColor.opacity(0.15) : Color.clear)
+                    )
                 }
-                .padding(.vertical, 4)
+                .buttonStyle(.plain)
             }
         }
     }

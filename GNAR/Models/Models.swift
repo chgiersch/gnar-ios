@@ -41,3 +41,10 @@ struct MountainPreview: Identifiable, Equatable {
     let name: String
     let isGlobal: Bool
 }
+
+struct LeaderboardSummary: Identifiable {
+    let id: UUID
+    let player: Player
+    let proScore: Int
+    let gnarScore: Int
+}

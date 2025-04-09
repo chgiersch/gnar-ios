@@ -13,24 +13,49 @@ import CoreData
 @MainActor
 final class GameDashboardViewModel: ObservableObject {
     @Published var session: GameSession
-    @Published var showingScoreEntry = false
-    @Published var scores: [Score] = []
     @Published var scoreSummaries: [ScoreSummary] = []
+    @Published var scores: [Score] = []
+    @Published var showingScoreEntry = false
+    @Published var selectedPlayer: Player?
 
     let persistenceController: PersistenceController
+
+    var sortedPlayers: [Player] {
+        let scoresByPlayerID = Dictionary(grouping: scores, by: { $0.playerID })
+
+        // Attach score totals to each player
+        let scoredPlayers = session.playersArray.map { player -> (Player, Int) in
+            let playerScores = scoresByPlayerID[player.id ?? UUID()] ?? []
+            let total = playerScores.reduce(0) { $0 + $1.proScore }
+            return (player, total)
+        }
+
+        let allZero = scoredPlayers.allSatisfy { $0.1 == 0 }
+
+        if allZero {
+            return scoredPlayers.map { $0.0 }
+                .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        } else {
+            return scoredPlayers
+                .sorted { $0.1 > $1.1 }
+                .map { $0.0 }
+        }
+    }
+
+    var filteredScores: [Score] {
+        guard let selected = selectedPlayer else { return [] }
+        return scores.filter { $0.playerID == selected.id }
+    }
 
     init(session: GameSession, persistenceController: PersistenceController = .shared) {
         self.session = session
         self.persistenceController = persistenceController
+        self.selectedPlayer = session.playersArray.first
         print("📊 GameDashboardViewModel initialized with session ID: \(session.id?.uuidString ?? "unknown")")
         print("📅 Session start date: \(session.startDate ?? Date())")
         print("🏔️ Mountain name: \(session.mountainName)")
         print("👥 Players count: \(session.players?.count ?? 0)")
         print("📈 Scores count: \(session.scores?.count ?? 0)")
-    }
-
-    var sortedPlayers: Set<Player> {
-        session.players as! Set<Player>
     }
 
     func loadScores() async {
@@ -40,7 +65,9 @@ final class GameDashboardViewModel: ObservableObject {
             let start = Date()
             print("🔄 Fetching scores for session \(session.id?.uuidString ?? "unknown")")
             let request: NSFetchRequest<Score> = Score.fetchRequest()
+            request.predicate = NSPredicate(format: "%K == %@", #keyPath(Score.gameSession), session)
             request.sortDescriptors = [NSSortDescriptor(keyPath: \Score.timestamp, ascending: false)]
+            request.returnsObjectsAsFaults = false
             let rawScores = try await context.perform {
                 try context.fetch(request)
             }
@@ -74,6 +101,31 @@ final class GameDashboardViewModel: ObservableObject {
         /// Call loadScores to refresh the scores and score summaries
         Task {
             await loadScores()
+        }
+    }
+    
+    var leaderboardSummaries: [LeaderboardSummary] {
+        let scoresByPlayerID = Dictionary(grouping: scores, by: { $0.playerID })
+
+        return session.playersArray.map { player in
+            let playerScores = scoresByPlayerID[player.id ?? UUID()] ?? []
+
+            let proTotal = playerScores.reduce(0) { $0 + $1.proScore }
+            let gnarTotal = playerScores.reduce(0) { $0 + $1.gnarScore }
+
+            return LeaderboardSummary(
+                id: player.id ?? UUID(),
+                player: player,
+                proScore: proTotal,
+                gnarScore: gnarTotal
+            )
+        }
+        .sorted {
+            if $0.proScore == $1.proScore {
+                return $0.player.name.localizedCaseInsensitiveCompare($1.player.name) == .orderedAscending
+            } else {
+                return $0.proScore > $1.proScore
+            }
         }
     }
 }

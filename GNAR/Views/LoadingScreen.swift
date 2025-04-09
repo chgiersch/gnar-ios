@@ -9,9 +9,9 @@
 import SwiftUI
 
 struct LoadingScreen: View {
-    @State private var skiAngle = 0.0
-    @State private var boardAngle = 0.0
-    let timer = Timer.publish(every: 0.016, on: .main, in: .common).autoconnect() // ~60fps
+    @State private var skiAngle: Double = 0
+    @State private var boardAngle: Double = 0
+    let timer = Timer.publish(every: 0.016, on: .main, in: .common).autoconnect() // ~60 FPS
 
     var body: some View {
         ZStack {

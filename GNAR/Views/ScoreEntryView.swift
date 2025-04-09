@@ -17,36 +17,38 @@ struct ScoreEntryView: View {
     @State private var isShowingECPPicker = false
     @State private var isShowingPenaltyPicker = false
     
+    @Binding var selectedPlayerID: NSManagedObjectID
+    let allPlayers: [Player]
+    
     let onScoreAdded: (Score) -> Void
     let isFreeRange: Bool
     
     init(
-        playerName: String,
+        selectedPlayerID: Binding<NSManagedObjectID>,
+        allPlayers: [Player],
         session: GameSession,
         context: NSManagedObjectContext,
         isFreeRange: Bool,
         onScoreAdded: @escaping (Score) -> Void
     ) {
         _viewModel = StateObject(wrappedValue: ScoreEntryViewModel(
-            playerName: playerName,
             session: session,
             context: context))
+        self._selectedPlayerID = selectedPlayerID
+        self.allPlayers = allPlayers
         self.onScoreAdded = onScoreAdded
         self.isFreeRange = isFreeRange
     }
 
     private var headerSection: some View {
-        VStack(spacing: 4) {
-            Text("Adding score for:")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            Text(viewModel.playerName)
-                .font(.title)
-                .bold()
-            Text("Total Points: \(viewModel.totalPoints)")
-                .font(.headline)
+        Section("Scoring For") {
+            Picker("Player", selection: $selectedPlayerID) {
+                ForEach(allPlayers) { player in
+                    Text(player.name).tag(player.objectID)
+                }
+            }
+            .pickerStyle(.menu)
         }
-        .padding(.vertical)
     }
 
     private var lineWorthSection: some View {
@@ -189,8 +191,10 @@ struct ScoreEntryView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Claim") {
                         print("Attempting to add score...")
-                        let score = viewModel.addScore()
-                        onScoreAdded(score)
+                        if let selectedPlayer = allPlayers.first(where: { $0.objectID == selectedPlayerID }) {
+                            let score = viewModel.addScore(for: selectedPlayer)
+                            onScoreAdded(score)
+                        }
                         dismiss()
                     }
                 }

@@ -22,11 +22,20 @@ public class Score: NSManagedObject, Identifiable {
     @NSManaged public var gameSession: GameSession?
 
     var proScore: Int {
-        print("✅ Using custom Score class")
-        let linePoints = (lineScore)?.points ?? 0
+        let linePoints = lineScore?.points ?? 0
         let trickPoints = trickBonusScoresArray.reduce(0) { $0 + $1.points }
         let ecpPoints = ecpScoresArray.reduce(0) { $0 + $1.points }
-        let penaltyPoints = penaltyScoresArray.reduce(0) { $0 + $1.points }
+        let penaltyPoints = penaltyScoresArray.reduce(0) { $0 + $1.points } // Already negative
+
+        return Int(Int32(linePoints) + trickPoints + ecpPoints + penaltyPoints)
+    }
+
+    var gnarScore: Int {
+        let linePoints = abs(lineScore?.points ?? 0)
+        let trickPoints = trickBonusScoresArray.reduce(0) { $0 + abs($1.points) }
+        let ecpPoints = ecpScoresArray.reduce(0) { $0 + abs($1.points) }
+        let penaltyPoints = penaltyScoresArray.reduce(0) { $0 + abs($1.points) }
+
         return Int(Int32(linePoints) + trickPoints + ecpPoints + penaltyPoints)
     }
 

@@ -12,8 +12,6 @@ import CoreData
 
 @MainActor
 class ScoreEntryViewModel: ObservableObject {
-    @Published var playerName: String
-    
     @Published var selectedLineScore: LineScore?
     @Published var selectedTricks: [TrickBonus] = []
     @Published var selectedECPs: [ECP] = []
@@ -30,8 +28,7 @@ class ScoreEntryViewModel: ObservableObject {
         return Int(Int32(linePoints) + trickPoints + ecpPoints - penaltyPoints)
     }
     
-    init(playerName: String, session: GameSession, context: NSManagedObjectContext) {
-        self.playerName = playerName
+    init(session: GameSession, context: NSManagedObjectContext) {
         self.session = session
         self.context = context
     }
@@ -42,11 +39,11 @@ class ScoreEntryViewModel: ObservableObject {
     func removePenalty(at index: Int) { selectedPenalties.remove(at: index) }
 
     /// Creates and saves a Core Data Score based on current selections
-    func addScore() -> Score {
+    func addScore(for selectedPlayer: Player) -> Score {
         print("🔄 Creating new Score entity...")
         let score = Score(context: context)
         score.id = UUID()
-        score.playerID = UUID() // TODO: Replace with actual player ID when available
+        score.playerID = selectedPlayer.id
         score.lineScore = selectedLineScore
         score.timestamp = Date()
         
