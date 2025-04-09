@@ -10,51 +10,47 @@ import CoreData
 
 @main
 struct GNARApp: App {
+    @StateObject private var appState = AppState()
+    @StateObject private var launchManager: LaunchStateManager
+    @State private var contentViewModel: ContentViewModel?
     private let persistenceController = PersistenceController.shared
+
     var coreData: CoreDataContexts {
         CoreDataContexts(
             viewContext: persistenceController.container.viewContext,
             backgroundContext: persistenceController.container.newBackgroundContext()
         )
     }
-    @StateObject private var appState = AppState()
-    @State private var contentViewModel: ContentViewModel?
+    
+    init() {
+        let appState = AppState()
+        _appState = StateObject(wrappedValue: appState)
+        _launchManager = StateObject(wrappedValue: LaunchStateManager(coreData: CoreDataContexts(
+            viewContext: PersistenceController.shared.container.viewContext,
+            backgroundContext: PersistenceController.shared.container.newBackgroundContext()
+        ), appState: appState))
+    }
 
     var body: some Scene {
         WindowGroup {
-            ZStack {
-                if appState.isReady, let viewModel = contentViewModel {
-                    ContentView(viewModel: viewModel)
-                        .transition(.opacity)
-                        .environment(\.managedObjectContext, coreData.viewContext)
-                        .environmentObject(appState)
-                        .environmentObject(viewModel)
-                } else {
-                    LoadingScreen()
-                        .transition(.opacity)
+            RootView(
+                appState: appState,
+                contentViewModel: contentViewModel
+            )
+            .environment(\.managedObjectContext, coreData.viewContext)
+            .environmentObject(appState)
+            .task {
+                await launchManager.beginLaunchSequence()
+                await MainActor.run {
+                    contentViewModel = ContentViewModel(coreData: coreData)
                 }
             }
-            .task {
+        }
+    }
+    
 //#if DEBUG
 //                await resetDebugStateIfNeeded()
 //#endif
-                print("🟢 GNARApp started. Checking if mountains are seeded.")
-                if UserDefaults.standard.hasSeededMountains {
-                    await MainActor.run {
-                        self.contentViewModel = ContentViewModel(coreData: coreData)
-                        appState.isReady = true
-                        print("✅ Mountains already seeded. App is ready.", Date())
-                    }
-                } else {
-                    let seedStart = Date()
-                    await loadInitialSeedData()
-                    let seedEnd = Date()
-                    print("⏱ Mountain seeding duration: \(seedEnd.timeIntervalSince(seedStart))s")
-                }
-            }
-            .animation(.easeInOut(duration: 0.4), value: appState.isReady)
-        }
-    }
     
     // MARK: - Debug Reset
     func resetDebugStateIfNeeded() async {
