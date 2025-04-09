@@ -18,34 +18,29 @@ struct GamesView: View {
         ZStack(alignment: .bottom) {
             ScrollView {
                 VStack(spacing: 24) {
-                    // 📦 Title
                     Text("My Games")
                         .font(.largeTitle.bold())
                         .padding(.top, 24)
                         .frame(maxWidth: .infinity, alignment: .center)
 
-                    // 🕹️ Session List
                     sessionSection()
                         .padding(.horizontal)
                 }
-                .frame(maxWidth: .infinity, alignment: .top)
-            }
-
-            // ➕ Start New Game Button
-            Button(action: {
-                contentViewModel.showingGameBuilder = true
-            }) {
-                Text("Start New Game")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(.blue)
-                    .foregroundColor(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .padding(.horizontal)
             }
             .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 80) // adds space under button
+                Button(action: {
+                    contentViewModel.showingGameBuilder = true
+                }) {
+                    Text("Start New Game")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(.blue)
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal)
+                }
+                .padding(.bottom, 8)
             }
         }
         .sheet(isPresented: $contentViewModel.showingGameBuilder) {

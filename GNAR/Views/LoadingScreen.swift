@@ -9,8 +9,9 @@
 import SwiftUI
 
 struct LoadingScreen: View {
-    @State private var rotateSki = false
-    @State private var rotateBoard = false
+    @State private var skiAngle = 0.0
+    @State private var boardAngle = 0.0
+    let timer = Timer.publish(every: 0.016, on: .main, in: .common).autoconnect() // ~60fps
 
     var body: some View {
         ZStack {
@@ -29,24 +30,22 @@ struct LoadingScreen: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 48, height: 48)
-                        .rotationEffect(.degrees(rotateSki ? 360 : 0))
-                        .animation(.easeInOut(duration: 2).repeatForever(autoreverses: false), value: rotateSki)
+                        .rotationEffect(.degrees(skiAngle))
 
                     Image(systemName: "figure.snowboarding")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 48, height: 48)
-                        .rotationEffect(.degrees(rotateBoard ? -360 : 0))
-                        .animation(.easeInOut(duration: 2.5).repeatForever(autoreverses: false), value: rotateBoard)
+                        .rotationEffect(.degrees(boardAngle))
                 }
 
                 ProgressView("Loading Mountains...")
                     .font(.headline)
                     .padding(.top, 8)
             }
-            .onAppear {
-                rotateSki = true
-                rotateBoard = true
+            .onReceive(timer) { _ in
+                skiAngle += 2
+                boardAngle -= 2
             }
         }
     }
