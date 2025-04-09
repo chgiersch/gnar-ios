@@ -12,6 +12,13 @@ struct ECPPickerView: View {
     @StateObject private var viewModel: ECPPickerViewModel
     @Environment(\.dismiss) private var dismiss
     @Binding var selectedECPs: [ECP]
+    @State private var selectedFrequency: ECPFrequency = .daily
+    
+    enum ECPFrequency: String, CaseIterable {
+        case daily = "Daily"
+        case yearly = "Yearly"
+        case unlimited = "Unlimited"
+    }
     
     init(allECPs: [ECP], selectedECPs: Binding<[ECP]>) {
         _viewModel = StateObject(wrappedValue: ECPPickerViewModel(
@@ -21,13 +28,6 @@ struct ECPPickerView: View {
         _selectedECPs = selectedECPs
     }
     
-    enum ECPFrequency: String, CaseIterable {
-        case daily = "Daily"
-        case yearly = "Yearly"
-        case unlimited = "Unlimited"
-    }
-        
-    @State private var selectedFrequency: ECPFrequency = .daily
 
     var filteredECPs: [ECP] {
         viewModel.allECPs.filter { ecp in
@@ -74,6 +74,12 @@ struct ECPPickerView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
                         selectedECPs = viewModel.selectedECPs
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        selectedECPs = []
                         dismiss()
                     }
                 }

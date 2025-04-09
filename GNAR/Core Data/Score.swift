@@ -21,6 +21,11 @@ public class Score: NSManagedObject, Identifiable {
     @NSManaged public var penaltyScores: NSSet?
     @NSManaged public var gameSession: GameSession?
 
+    func playerName(in session: GameSession) -> String {
+        guard let id = playerID else { return "Unknown Player" }
+        return session.playersArray.first(where: { $0.id == id })?.name ?? "Unknown Player"
+    }
+
     var proScore: Int {
         let linePoints = lineScore?.points ?? 0
         let trickPoints = trickBonusScoresArray.reduce(0) { $0 + $1.points }
@@ -40,15 +45,15 @@ public class Score: NSManagedObject, Identifiable {
     }
 
     var trickBonusScoresArray: [TrickBonusScore] {
-        (trickBonusScores as? Set<TrickBonusScore>)?.sorted(by: { $0.timestamp ?? Date.distantPast < $1.timestamp ?? Date.distantPast }) ?? []
+        (trickBonusScores?.allObjects as? [TrickBonusScore]) ?? []
     }
 
     var ecpScoresArray: [ECPScore] {
-        (ecpScores as? Set<ECPScore>)?.sorted(by: { $0.timestamp ?? Date.distantPast < $1.timestamp ?? Date.distantPast }) ?? []
+        (ecpScores?.allObjects as? [ECPScore]) ?? []
     }
 
     var penaltyScoresArray: [PenaltyScore] {
-        (penaltyScores as? Set<PenaltyScore>)?.sorted(by: { $0.timestamp ?? Date.distantPast < $1.timestamp ?? Date.distantPast }) ?? []
+        (penaltyScores?.allObjects as? [PenaltyScore]) ?? []
     }
     
     func addLineScore(_ lineWorth: LineWorth, snowLevel: SnowLevel, context: NSManagedObjectContext) {

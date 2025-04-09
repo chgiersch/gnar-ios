@@ -19,6 +19,7 @@ class ScoreEntryViewModel: ObservableObject {
 
     let context: NSManagedObjectContext
     let session: GameSession
+    var editingScore: Score? = nil
 
     var totalPoints: Int {
         let linePoints = selectedLineScore?.points ?? 0
@@ -79,6 +80,67 @@ class ScoreEntryViewModel: ObservableObject {
 
         return score
     }
+    
+    func saveScore(for selectedPlayer: Player) -> Score {
+        if let score = editingScore {
+            print("✏️ Editing existing Score")
+
+            // Update player and session references if needed
+            score.playerID = selectedPlayer.id
+            score.timestamp = Date()
+            score.gameSession = session
+
+            // Clear existing associations
+            score.lineScore = nil
+            score.setValue(NSSet(), forKey: "trickBonusScores")
+            score.setValue(NSSet(), forKey: "ecpScores")
+            score.setValue(NSSet(), forKey: "penaltyScores")
+
+            // Re-apply LineScore if selected
+            if let selectedLine = selectedLineScore {
+                score.lineScore = selectedLine
+            }
+
+            // Re-add Tricks
+            for trick in selectedTricks {
+                score.addTrickBonusScore(trick, context: context)
+            }
+
+            // Re-add ECPs
+            for ecp in selectedECPs {
+                score.addECPScore(ecp, context: context)
+            }
+
+            // Re-add Penalties
+            for penalty in selectedPenalties {
+                score.addPenaltyScore(penalty, context: context)
+            }
+
+            try? context.save()
+            return score
+
+        } else {
+            return addScore(for: selectedPlayer) 
+        }
+    }
+    
+    func load(from score: Score) {
+        self.editingScore = score
+        self.selectedLineScore = score.lineScore
+
+        if let trickScores = score.trickBonusScores?.allObjects as? [TrickBonusScore] {
+            self.selectedTricks = trickScores.compactMap { $0.trickBonus }
+        }
+
+        if let ecpScores = score.ecpScores?.allObjects as? [ECPScore] {
+            self.selectedECPs = ecpScores.compactMap { $0.ecp }
+        }
+
+        if let penaltyScores = score.penaltyScores?.allObjects as? [PenaltyScore] {
+            self.selectedPenalties = penaltyScores.compactMap { $0.penalty }
+        }
+    }
+
     // MARK: - Fetching Core Data Entities
 
     func fetchTrickBonuses() -> [TrickBonus] {

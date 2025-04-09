@@ -49,13 +49,11 @@ struct TrickBonusPickerView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         viewModel.cancelSelection()
+                        selectedBonuses = []
                         dismiss()
                     }
                 }
             }
-        }
-        .onAppear {
-            viewModel.newTrickBonuses = []
         }
     }
 }

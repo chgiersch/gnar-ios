@@ -47,6 +47,12 @@ struct PenaltyPickerView: View {
                         dismiss()
                     }
                 }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        selectedPenalties = []
+                        dismiss()
+                    }
+                }
             }
         }
     }

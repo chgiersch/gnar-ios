@@ -29,11 +29,15 @@ struct ScoreEntryView: View {
         session: GameSession,
         context: NSManagedObjectContext,
         isFreeRange: Bool,
+        editingScore: Score? = nil,
         onScoreAdded: @escaping (Score) -> Void
     ) {
-        _viewModel = StateObject(wrappedValue: ScoreEntryViewModel(
-            session: session,
-            context: context))
+        let vm = ScoreEntryViewModel(session: session, context: context)
+        if let editing = editingScore {
+            vm.load(from: editing)
+        }
+
+        _viewModel = StateObject(wrappedValue: vm)
         self._selectedPlayerID = selectedPlayerID
         self.allPlayers = allPlayers
         self.onScoreAdded = onScoreAdded
@@ -182,7 +186,7 @@ struct ScoreEntryView: View {
                 }
                 .padding(.horizontal)
             }
-            .navigationTitle("New Score")
+            .navigationTitle(viewModel.editingScore == nil ? "New Score" : "Edit Score")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -192,7 +196,7 @@ struct ScoreEntryView: View {
                     Button("Claim") {
                         print("Attempting to add score...")
                         if let selectedPlayer = allPlayers.first(where: { $0.objectID == selectedPlayerID }) {
-                            let score = viewModel.addScore(for: selectedPlayer)
+                            let score = viewModel.saveScore(for: selectedPlayer)
                             onScoreAdded(score)
                         }
                         dismiss()
@@ -262,6 +266,3 @@ struct RoundScoreButton: View {
 }
 
 
-#Preview("Score Entry") {
-    
-}

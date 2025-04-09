@@ -55,7 +55,7 @@ struct GamesView: View {
             }
         }
         .fullScreenCover(item: $contentViewModel.activeSession) { session in
-            GameDashboardView(session: session)
+            GameDashboardView(session: session, contexts: contentViewModel.coreData)
         }
         .overlay {
             if contentViewModel.isLoadingSessions {
@@ -79,6 +79,7 @@ struct GamesView: View {
             LazyVStack(spacing: 16) {
                 ForEach(sessions) { session in
                     Button {
+                        contentViewModel.activeSession = nil 
                         contentViewModel.loadSession(by: session.id)
                     } label: {
                         sessionRow(for: session)
