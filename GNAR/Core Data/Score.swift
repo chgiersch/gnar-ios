@@ -67,6 +67,7 @@ public class Score: NSManagedObject, Identifiable {
         trickScore.id = UUID()
         trickScore.trickBonus = trickBonus
         trickScore.timestamp = Date()
+        trickScore.points = trickBonus.points
         self.mutableSetValue(forKey: "trickBonusScores").add(trickScore)
     }
 
@@ -75,6 +76,7 @@ public class Score: NSManagedObject, Identifiable {
         ecpScore.id = UUID()
         ecpScore.ecp = ecp
         ecpScore.timestamp = Date()
+        ecpScore.points = ecp.points
         self.mutableSetValue(forKey: "ecpScores").add(ecpScore)
     }
 
@@ -83,6 +85,7 @@ public class Score: NSManagedObject, Identifiable {
         penaltyScore.id = UUID()
         penaltyScore.penalty = penalty
         penaltyScore.timestamp = Date()
+        penaltyScore.points = penalty.points
         self.mutableSetValue(forKey: "penaltyScores").add(penaltyScore)
     }
 

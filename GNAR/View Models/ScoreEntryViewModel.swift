@@ -125,19 +125,23 @@ class ScoreEntryViewModel: ObservableObject {
     }
     
     func load(from score: Score) {
+        print("📦 Loading Score into ViewModel:", score.id?.uuidString ?? "nil")
         self.editingScore = score
         self.selectedLineScore = score.lineScore
 
         if let trickScores = score.trickBonusScores?.allObjects as? [TrickBonusScore] {
             self.selectedTricks = trickScores.compactMap { $0.trickBonus }
+            print("🎿 Loaded Tricks:", self.selectedTricks.map { $0.name })
         }
 
         if let ecpScores = score.ecpScores?.allObjects as? [ECPScore] {
             self.selectedECPs = ecpScores.compactMap { $0.ecp }
+            print("🌟 Loaded ECPs:", self.selectedECPs.map { $0.name })
         }
 
         if let penaltyScores = score.penaltyScores?.allObjects as? [PenaltyScore] {
             self.selectedPenalties = penaltyScores.compactMap { $0.penalty }
+            print("⚠️ Loaded Penalties:", self.selectedPenalties.map { $0.name })
         }
     }
 

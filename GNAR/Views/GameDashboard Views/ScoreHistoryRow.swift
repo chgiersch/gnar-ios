@@ -12,58 +12,94 @@ struct ScoreHistoryRow: View {
     let score: Score
     let isExpanded: Bool
     let onTap: () -> Void
-    let onEdit: () -> Void
     let onDelete: () -> Void
     let session: GameSession
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(score.playerName(in: session))
-                    .font(.subheadline.bold())
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top) {
+                if let line = score.lineScore {
+                    HStack {
+                        Image(systemName: "mountain.2.fill")
+                            .foregroundColor(.accentColor)
+
+                        Text(line.lineWorth?.name ?? "Unknown Line")
+                            .font(.subheadline.bold())
+                        if isExpanded {
+                            Spacer()
+                            Text("\(Int(line.points)) pts")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                } else {
+                    HStack(spacing: 8) {
+                        if score.ecpScores != nil {
+                            Image(systemName: "skiing.downhill.fill")
+                                .foregroundColor(.blue)
+                        }
+                        if score.trickBonusScores != nil {
+                            Image(systemName: "star.fill")
+                                .foregroundColor(.green)
+                        }
+                        if score.penaltyScores != nil {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
+
                 Spacer()
-                Text("\(score.proScore) pts")
-                    .font(.subheadline)
-                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                    .foregroundColor(.secondary)
+
+                if !isExpanded {
+                    Text("\(score.gnarScore) pts")
+                        .font(.subheadline)
+                        .bold()
+                        .padding(.leading, 8)
+                }
             }
-            .contentShape(Rectangle())
-            .onTapGesture { onTap() }
 
+            /// Pills when collapsed: use multi-line wrap, not scroll
+            if !isExpanded {
+                PillWrapSection(items: score.trickBonusScoresArray.compactMap { $0.trickBonus?.name }, color: .blue)
+                PillWrapSection(items: score.ecpScoresArray.compactMap { $0.ecp?.name }, color: .green)
+                PillWrapSection(items: score.penaltyScoresArray.compactMap { $0.penalty?.name }, color: .red)
+            }
+
+            /// Fully expanded view
             if isExpanded {
-                VStack(alignment: .leading, spacing: 8) {
-                    if let line = score.lineScore {
-                        ScorePill(title: "Line", points: line.points)
-                    }
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        ForEach(score.trickBonusScoresArray, id: \.self) { trickScore in
-                            if let trick = trickScore.trickBonus {
-                                ScorePill(title: trick.name, points: Int(trickScore.points))
-                            }
+                VStack(alignment: .leading, spacing: 12) {
+                    ScoreExpandedList(
+                        icon: "figure.skiing.downhill",
+                        color: .blue,
+                        scores: score.trickBonusScoresArray.compactMap {
+                            guard let trick = $0.trickBonus else { return nil }
+                            return ScorePillData(title: trick.name, points: Int($0.points))
                         }
+                    )
 
-                        ForEach(score.ecpScoresArray, id: \.self) { ecpScore in
-                            if let ecp = ecpScore.ecp {
-                                ScorePill(title: ecp.name, points: Int(ecpScore.points))
-                            }
+                    ScoreExpandedList(
+                        icon: "star.fill",
+                        color: .green,
+                        scores: score.ecpScoresArray.compactMap {
+                            guard let ecp = $0.ecp else { return nil }
+                            return ScorePillData(title: ecp.name, points: Int($0.points))
                         }
+                    )
 
-                        ForEach(score.penaltyScoresArray, id: \.self) { penaltyScore in
-                            if let penalty = penaltyScore.penalty {
-                                ScorePill(title: penalty.name, points: Int(penaltyScore.points))
-                            }
+                    ScoreExpandedList(
+                        icon: "exclamationmark.triangle.fill",
+                        color: .red,
+                        scores: score.penaltyScoresArray.compactMap {
+                            guard let penalty = $0.penalty else { return nil }
+                            return ScorePillData(title: penalty.name, points: Int($0.points))
                         }
-                    }
-
+                    )
                     HStack {
                         Spacer()
-                        Button(role: .destructive) { onDelete() } label: {
-                            Image(systemName: "trash")
-                        }
-                        Button { onEdit() } label: {
-                            Image(systemName: "pencil")
-                        }
+                        Text("Total: \(score.gnarScore) pts")
+                            .font(.subheadline)
+                            .bold()
                     }
                 }
                 .padding(.top, 4)
@@ -71,21 +107,104 @@ struct ScoreHistoryRow: View {
             }
         }
         .padding(.vertical, 6)
+        .contentShape(Rectangle()) /// Make full cell tappable
+        .onTapGesture { onTap() } /// Toggle expansion
+        .animation(.easeInOut, value: isExpanded)
     }
 }
 
-struct ScorePill: View {
-    let title: String
-    let points: Int?
+private struct PillLabel: View {
+    let text: String
+    let color: Color
 
     var body: some View {
-        if let points = points {
-            Text("\(title): \(points)")
-                .font(.caption)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.gray.opacity(0.15))
-                .clipShape(Capsule())
+        Text(text)
+            .font(.caption)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(color.opacity(0.2))
+            .foregroundColor(color)
+            .clipShape(Capsule())
+    }
+}
+
+/// Displays individually styled pills, wrapped using simple stacked HStacks.
+/// This relies on visual line breaks (not automatic wrapping) for now.
+private struct PillWrapSection: View {
+    let items: [String]
+    let color: Color
+
+    var body: some View {
+        let rows = makeRows(from: items)
+
+        return VStack(alignment: .leading, spacing: 8) {
+            ForEach(rows, id: \.self) { row in
+                HStack(spacing: 8) {
+                    ForEach(row, id: \.self) { text in
+                        Text(text)
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(color.opacity(0.2))
+                            .foregroundColor(color)
+                            .clipShape(Capsule())
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+                }
+            }
+        }
+        .padding(.top, 4)
+    }
+
+    /// Breaks items into rows of up to 4
+    private func makeRows(from items: [String]) -> [[String]] {
+        var result: [[String]] = []
+        var currentRow: [String] = []
+
+        for item in items {
+            currentRow.append(item)
+            if currentRow.count == 4 {
+                result.append(currentRow)
+                currentRow = []
+            }
+        }
+
+        if !currentRow.isEmpty {
+            result.append(currentRow)
+        }
+
+        return result
+    }
+}
+
+private struct ScoreExpandedList: View {
+    let icon: String
+    let color: Color
+    let scores: [ScorePillData]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(scores) { item in
+                HStack {
+                    HStack(spacing: 8) {
+                        Image(systemName: icon)
+                            .foregroundColor(color)
+                        Text(item.title)
+                            .font(.subheadline)
+                            .foregroundColor(color)
+                    }
+                    Spacer()
+                    Text("\(item.points)")
+                        .font(.subheadline)
+                }
+            }
         }
     }
+}
+
+private struct ScorePillData: Identifiable {
+    let id = UUID()
+    let title: String
+    let points: Int
 }

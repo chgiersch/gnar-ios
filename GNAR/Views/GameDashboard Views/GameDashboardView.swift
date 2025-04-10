@@ -12,8 +12,7 @@ struct GameDashboardView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel: GameDashboardViewModel
     @State private var expandedScoreIDs: Set<UUID> = []
-    @State private var scoreBeingEdited: Score?
-
+    
     init(session: GameSession, contexts: CoreDataContexts) {
         let repository = ScoreRepository(contexts: contexts)
         _viewModel = StateObject(wrappedValue: GameDashboardViewModel(session: session, repository: repository))
@@ -30,8 +29,7 @@ struct GameDashboardView: View {
                 ScoreHistorySection(
                     viewModel: viewModel,
                     scores: viewModel.filteredScores,
-                    expandedScoreIDs: $expandedScoreIDs,
-                    onEdit: { score in scoreBeingEdited = score }
+                    expandedScoreIDs: $expandedScoreIDs
                 )
             }
             .navigationTitle("Game: \(viewModel.session.mountainName)")
@@ -59,20 +57,6 @@ struct GameDashboardView: View {
                         editingScore: nil
                     ) { newScore in
                         viewModel.addScore(newScore)
-                    }
-                }
-            }
-            .sheet(item: $scoreBeingEdited) { score in
-                if let player = viewModel.session.playersArray.first(where: { $0.id == score.playerID }) {
-                    ScoreEntryView(
-                        selectedPlayerID: .constant(player.objectID),
-                        allPlayers: viewModel.sortedPlayers,
-                        session: viewModel.session,
-                        context: viewModel.scoreRepositoryViewContext,
-                        isFreeRange: viewModel.session.mountainName == "Free Range",
-                        editingScore: score
-                    ) { updatedScore in
-                        viewModel.addScore(updatedScore)
                     }
                 }
             }

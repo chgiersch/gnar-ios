@@ -10,25 +10,31 @@ import SwiftUI
 
 struct ScoreHistorySection: View {
     @ObservedObject var viewModel: GameDashboardViewModel
-    let scores: [Score]
+    var scores: [Score]
     @Binding var expandedScoreIDs: Set<UUID>
-    let onEdit: (Score) -> Void
 
     var body: some View {
         Section("Score History") {
-            ForEach(scores) { score in
-                ScoreHistoryRow(
-                    score: score,
-                    isExpanded: expandedScoreIDs.contains(score.id!),
-                    onTap: {
-                        withAnimation {
-                            toggleExpansion(for: score.id!)
-                        }
-                    },
-                    onEdit: { onEdit(score) },
-                    onDelete: { viewModel.deleteScore(score) },
-                    session: viewModel.session
-                )
+            ForEach(scores, id: \.self) { score in
+                if let id = score.id {
+                    ScoreHistoryRow(
+                        score: score,
+                        isExpanded: expandedScoreIDs.contains(id),
+                        onTap: {
+                            withAnimation {
+                                toggleExpansion(for: id)
+                            }
+                        },
+                        onDelete: { },
+                        session: viewModel.session
+                    )
+                }
+            }
+            .onDelete { indexSet in
+                for index in indexSet {
+                    let score = scores[index]
+                    viewModel.deleteScore(score)
+                }
             }
         }
     }
