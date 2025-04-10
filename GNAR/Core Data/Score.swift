@@ -57,7 +57,7 @@ public class Score: NSManagedObject, Identifiable {
     }
     
     func addLineScore(_ lineWorth: LineWorth, snowLevel: SnowLevel, context: NSManagedObjectContext) {
-        let lineScore = LineScore.create(in: context, lineWorth: lineWorth, snowLevel: snowLevel.rawValue)
+        let lineScore = LineScore.create(in: context, lineWorth: lineWorth, snowLevel: snowLevel)
         lineScore.score = self
         self.lineScore = lineScore
     }

@@ -68,7 +68,8 @@ struct ScoreEntryView: View {
                                 .foregroundColor(.secondary)
                         }
                         Spacer()
-                        Text("\(line.points)")
+                        Text("\(viewModel.points(for: line.lineWorth!, snowLevel: SnowLevel(rawValue: line.snowLevel!)!))")
+                            .foregroundColor(SnowLevel(rawValue: line.snowLevel!)?.displayColor ?? .secondary)
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -214,7 +215,7 @@ struct ScoreEntryView: View {
                     let newLineScore = LineScore.create(
                         in: viewModel.context,
                         lineWorth: selectedLineWorth,
-                        snowLevel: selectedSnowLevel.rawValue
+                        snowLevel: selectedSnowLevel
                     )
                     viewModel.selectedLineScore = newLineScore
                     isShowingLineWorthPicker = false

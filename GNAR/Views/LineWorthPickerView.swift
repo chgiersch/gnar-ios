@@ -107,9 +107,9 @@ struct LineWorthPickerView: View {
     
     private func color(for level: SnowLevel) -> Color {
         switch level {
-        case .low: return .red
-        case .medium: return .yellow
-        case .high: return .blue
+        case .low: return level.displayColor
+        case .medium: return level.displayColor
+        case .high: return level.displayColor
         }
     }
     
@@ -167,7 +167,6 @@ private struct LineRow: View {
 
                 Text("\(points(for: selectedSnowLevel)) pts")
                     .font(.title3.bold())
-                    .foregroundColor(.primary)
             }
 
             HStack(spacing: 12) {
@@ -175,9 +174,10 @@ private struct LineRow: View {
                     let value = points(for: level)
                     Text("\(value)")
                         .font(.caption)
+                        .foregroundColor(level == selectedSnowLevel ? .white : level.displayColor)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(level == selectedSnowLevel ? Color.accentColor.opacity(0.2) : Color.gray.opacity(0.1))
+                        .background(level == selectedSnowLevel ? level.displayColor : level.displayColor.opacity(0.2))
                         .clipShape(Capsule())
                 }
             }

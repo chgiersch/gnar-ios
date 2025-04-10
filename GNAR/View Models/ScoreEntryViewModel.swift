@@ -29,6 +29,17 @@ class ScoreEntryViewModel: ObservableObject {
         return Int(Int32(linePoints) + trickPoints + ecpPoints - penaltyPoints)
     }
     
+    func points(for lineWorth: LineWorth, snowLevel: SnowLevel) -> Int {
+        switch snowLevel {
+        case .low:
+            return Int(truncating: lineWorth.basePointsLow ?? 0)
+        case .medium:
+            return Int(truncating: lineWorth.basePointsMedium ?? 0)
+        case .high:
+            return Int(truncating: lineWorth.basePointsHigh ?? 0)
+        }
+    }
+    
     init(session: GameSession, context: NSManagedObjectContext) {
         self.session = session
         self.context = context
