@@ -21,29 +21,43 @@ public class Score: NSManagedObject, Identifiable {
     @NSManaged public var penaltyScores: NSSet?
     @NSManaged public var gameSession: GameSession?
 
+    func playerName(in session: GameSession) -> String {
+        guard let id = playerID else { return "Unknown Player" }
+        return session.playersArray.first(where: { $0.id == id })?.name ?? "Unknown Player"
+    }
+
     var proScore: Int {
-        print("✅ Using custom Score class")
-        let linePoints = (lineScore)?.points ?? 0
+        let linePoints = lineScore?.points ?? 0
         let trickPoints = trickBonusScoresArray.reduce(0) { $0 + $1.points }
         let ecpPoints = ecpScoresArray.reduce(0) { $0 + $1.points }
-        let penaltyPoints = penaltyScoresArray.reduce(0) { $0 + $1.points }
+        let penaltyPoints = penaltyScoresArray.reduce(0) { $0 + $1.points } // Already negative
+
+        return Int(Int32(linePoints) + trickPoints + ecpPoints + penaltyPoints)
+    }
+
+    var gnarScore: Int {
+        let linePoints = abs(lineScore?.points ?? 0)
+        let trickPoints = trickBonusScoresArray.reduce(0) { $0 + abs($1.points) }
+        let ecpPoints = ecpScoresArray.reduce(0) { $0 + abs($1.points) }
+        let penaltyPoints = penaltyScoresArray.reduce(0) { $0 + abs($1.points) }
+
         return Int(Int32(linePoints) + trickPoints + ecpPoints + penaltyPoints)
     }
 
     var trickBonusScoresArray: [TrickBonusScore] {
-        (trickBonusScores as? Set<TrickBonusScore>)?.sorted(by: { $0.timestamp ?? Date.distantPast < $1.timestamp ?? Date.distantPast }) ?? []
+        (trickBonusScores?.allObjects as? [TrickBonusScore]) ?? []
     }
 
     var ecpScoresArray: [ECPScore] {
-        (ecpScores as? Set<ECPScore>)?.sorted(by: { $0.timestamp ?? Date.distantPast < $1.timestamp ?? Date.distantPast }) ?? []
+        (ecpScores?.allObjects as? [ECPScore]) ?? []
     }
 
     var penaltyScoresArray: [PenaltyScore] {
-        (penaltyScores as? Set<PenaltyScore>)?.sorted(by: { $0.timestamp ?? Date.distantPast < $1.timestamp ?? Date.distantPast }) ?? []
+        (penaltyScores?.allObjects as? [PenaltyScore]) ?? []
     }
     
     func addLineScore(_ lineWorth: LineWorth, snowLevel: SnowLevel, context: NSManagedObjectContext) {
-        let lineScore = LineScore.create(in: context, lineWorth: lineWorth, snowLevel: snowLevel.rawValue)
+        let lineScore = LineScore.create(in: context, lineWorth: lineWorth, snowLevel: snowLevel)
         lineScore.score = self
         self.lineScore = lineScore
     }
@@ -53,6 +67,7 @@ public class Score: NSManagedObject, Identifiable {
         trickScore.id = UUID()
         trickScore.trickBonus = trickBonus
         trickScore.timestamp = Date()
+        trickScore.points = trickBonus.points
         self.mutableSetValue(forKey: "trickBonusScores").add(trickScore)
     }
 
@@ -61,6 +76,7 @@ public class Score: NSManagedObject, Identifiable {
         ecpScore.id = UUID()
         ecpScore.ecp = ecp
         ecpScore.timestamp = Date()
+        ecpScore.points = ecp.points
         self.mutableSetValue(forKey: "ecpScores").add(ecpScore)
     }
 
@@ -69,6 +85,7 @@ public class Score: NSManagedObject, Identifiable {
         penaltyScore.id = UUID()
         penaltyScore.penalty = penalty
         penaltyScore.timestamp = Date()
+        penaltyScore.points = penalty.points
         self.mutableSetValue(forKey: "penaltyScores").add(penaltyScore)
     }
 

@@ -28,74 +28,64 @@ struct GameBuilderView: View {
     }
     
     var body: some View {
-        Form {
-            Section {
-                Text("Start a New GNAR Game")
-                    .font(.title.bold())
-            }
-
-            Section(header: Text("Select Area")) {
-                ForEach(viewModel.mountains) { mountain in
-                    MountainRow(
-                        mountain: mountain,
-                        isSelected: viewModel.selectedMountain?.id == mountain.id
-                    ) {
-                        viewModel.selectedMountain = mountain
+        NavigationStack {
+            Form {
+                Section(header: Text("SELECT AREA")) {
+                    ForEach(viewModel.mountains) { mountain in
+                        MountainRow(
+                            mountain: mountain,
+                            isSelected: viewModel.selectedMountain?.id == mountain.id
+                        ) {
+                            viewModel.selectedMountain = mountain
+                        }
                     }
                 }
-            }
 
-            Section(header: Text("Players")) {
-                ForEach(Array(viewModel.playerNames.enumerated()), id: \.offset) { index, _ in
-                    HStack {
-                        TextField("You", text: $viewModel.playerNames[index])
-                            .focused($focusedPlayerIndex, equals: index)
-                            .submitLabel(.next)
+                Section(header: Text("PLAYERS")) {
+                    ForEach(Array(viewModel.playerNames.enumerated()), id: \.offset) { index, _ in
+                        HStack {
+                            TextField("You", text: $viewModel.playerNames[index])
+                                .focused($focusedPlayerIndex, equals: index)
+                                .submitLabel(.next)
 
-                        if viewModel.playerNames.count > 1 {
-                            Button(action: {
-                                viewModel.removePlayer(at: index)
-                            }) {
-                                Image(systemName: "minus.circle.fill")
-                                    .foregroundColor(.red)
+                            if viewModel.playerNames.count > 1 {
+                                Button(action: {
+                                    viewModel.removePlayer(at: index)
+                                }) {
+                                    Image(systemName: "minus.circle.fill")
+                                        .foregroundColor(.red)
+                                }
                             }
                         }
                     }
-                }
 
-                Button(action: {
-                    viewModel.addPlayer()
-                    focusedPlayerIndex = viewModel.playerNames.count - 1
-                }) {
-                    Label("Add Player", systemImage: "plus.circle.fill")
-                }
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") { dismiss() }
-            }
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Create") {
-                    print("Attempting to create game session...")
-                    if let newSession = viewModel.createGameSession() {
-                        print("✅ Game session created successfully for mountain: \(newSession.mountainName)")
-                        if let players = newSession.players as? Set<Player> {
-                            print("👥 Players: \(players.map { $0.name })")
-                        }
-                        viewModel.createdGameSession = newSession
-                        onCreateSessionCallback(newSession)
-                        dismiss()
-                    } else {
-                        print("Failed to create game session.")
+                    Button(action: {
+                        viewModel.addPlayer()
+                        focusedPlayerIndex = viewModel.playerNames.count - 1
+                    }) {
+                        Label("Add Player", systemImage: "plus.circle.fill")
                     }
                 }
-                .disabled(viewModel.playerNames.allSatisfy { $0.trimmingCharacters(in: .whitespaces).isEmpty })
             }
-        }
-        .onDisappear {
-            print("GameBuilderView disappeared.")
-            NotificationCenter.default.post(name: .loadGameSessions, object: nil)
+            .navigationTitle("Start New Game")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Start") {
+                        if let newSession = viewModel.createGameSession() {
+                            onCreateSessionCallback(newSession)
+                            dismiss()
+                        }
+                    }
+                    .accessibilityIdentifier("Start")
+                    .disabled(viewModel.playerNames.allSatisfy { $0.trimmingCharacters(in: .whitespaces).isEmpty })
+                }
+            }
+            .onDisappear {
+                NotificationCenter.default.post(name: .loadGameSessions, object: nil)
+            }
         }
     }
 }
@@ -115,6 +105,7 @@ private struct MountainRow: View {
             }
         }
         .contentShape(Rectangle())
+        .accessibilityIdentifier("mountain-row-\(mountain.id)")
         .onTapGesture {
             onTap()
         }

@@ -17,36 +17,42 @@ struct ScoreEntryView: View {
     @State private var isShowingECPPicker = false
     @State private var isShowingPenaltyPicker = false
     
+    @Binding var selectedPlayerID: NSManagedObjectID
+    let allPlayers: [Player]
+    
     let onScoreAdded: (Score) -> Void
     let isFreeRange: Bool
     
     init(
-        playerName: String,
+        selectedPlayerID: Binding<NSManagedObjectID>,
+        allPlayers: [Player],
         session: GameSession,
         context: NSManagedObjectContext,
         isFreeRange: Bool,
+        editingScore: Score? = nil,
         onScoreAdded: @escaping (Score) -> Void
     ) {
-        _viewModel = StateObject(wrappedValue: ScoreEntryViewModel(
-            playerName: playerName,
-            session: session,
-            context: context))
+        let vm = ScoreEntryViewModel(session: session, context: context)
+        if let editing = editingScore {
+            vm.load(from: editing)
+        }
+
+        _viewModel = StateObject(wrappedValue: vm)
+        self._selectedPlayerID = selectedPlayerID
+        self.allPlayers = allPlayers
         self.onScoreAdded = onScoreAdded
         self.isFreeRange = isFreeRange
     }
 
     private var headerSection: some View {
-        VStack(spacing: 4) {
-            Text("Adding score for:")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            Text(viewModel.playerName)
-                .font(.title)
-                .bold()
-            Text("Total Points: \(viewModel.totalPoints)")
-                .font(.headline)
+        Section("Scoring For") {
+            Picker("Player", selection: $selectedPlayerID) {
+                ForEach(allPlayers) { player in
+                    Text(player.name).tag(player.objectID)
+                }
+            }
+            .pickerStyle(.menu)
         }
-        .padding(.vertical)
     }
 
     private var lineWorthSection: some View {
@@ -62,7 +68,8 @@ struct ScoreEntryView: View {
                                 .foregroundColor(.secondary)
                         }
                         Spacer()
-                        Text("\(line.points)")
+                        Text("\(viewModel.points(for: line.lineWorth!, snowLevel: SnowLevel(rawValue: line.snowLevel!)!))")
+                            .foregroundColor(SnowLevel(rawValue: line.snowLevel!)?.displayColor ?? .secondary)
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -167,20 +174,24 @@ struct ScoreEntryView: View {
                         RoundScoreButton(title: "Line", systemImage: "mountain.2.fill") {
                             isShowingLineWorthPicker = true
                         }
+                        .accessibilityIdentifier("Line")
                     }
                     RoundScoreButton(title: "Trick", systemImage: "figure.skiing.downhill") {
                         isShowingTrickPicker = true
                     }
+                    .accessibilityIdentifier("Trick")
                     RoundScoreButton(title: "ECP", systemImage: "star.fill") {
                         isShowingECPPicker = true
                     }
+                    .accessibilityIdentifier("ECP")
                     RoundScoreButton(title: "Penalty", systemImage: "exclamationmark.triangle.fill") {
                         isShowingPenaltyPicker = true
                     }
+                    .accessibilityIdentifier("Penalty")
                 }
                 .padding(.horizontal)
             }
-            .navigationTitle("New Score")
+            .navigationTitle(viewModel.editingScore == nil ? "New Score" : "Edit Score")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -189,8 +200,10 @@ struct ScoreEntryView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Claim") {
                         print("Attempting to add score...")
-                        let score = viewModel.addScore()
-                        onScoreAdded(score)
+                        if let selectedPlayer = allPlayers.first(where: { $0.objectID == selectedPlayerID }) {
+                            let score = viewModel.saveScore(for: selectedPlayer)
+                            onScoreAdded(score)
+                        }
                         dismiss()
                     }
                 }
@@ -206,7 +219,7 @@ struct ScoreEntryView: View {
                     let newLineScore = LineScore.create(
                         in: viewModel.context,
                         lineWorth: selectedLineWorth,
-                        snowLevel: selectedSnowLevel.rawValue
+                        snowLevel: selectedSnowLevel
                     )
                     viewModel.selectedLineScore = newLineScore
                     isShowingLineWorthPicker = false
@@ -258,6 +271,3 @@ struct RoundScoreButton: View {
 }
 
 
-#Preview("Score Entry") {
-    
-}

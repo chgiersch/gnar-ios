@@ -21,7 +21,7 @@ struct ContentView: View {
                         Label("Home", systemImage: "house")
                     }
                 
-                GamesView(viewModel: viewModel.gamesViewModel)
+                GamesView(contentViewModel: viewModel)
                     .tag(ContentViewModel.Tab.games)
                     .tabItem {
                         Label("Games", systemImage: "gamecontroller")
@@ -34,12 +34,21 @@ struct ContentView: View {
                     }
             }
             .onAppear {
-                print("🟢 ContentView appeared.")
+                print("📱 ContentView appeared at", Date())
+                Task {
+                    await MainActor.run {
+                        self.viewModel.sessionPreviews = []
+                        self.viewModel.visibleSessions = []
+                        self.viewModel.isLoadingSessions = true
+                    }                    
+                }
+                Task { await viewModel.loadSessionsIfNeeded() }
             }
             .onChange(of: viewModel.selectedTab) { oldTab, newTab in
-                print("🔄 Tab changed from \(oldTab) to \(newTab)")
                 if newTab == .games {
-                    print("📦 Games tab selected. Session count: \(viewModel.gamesViewModel.sessionPreviews.count)")
+                    Task {
+                        await viewModel.loadSessionsIfNeeded()
+                    }
                 }
             }
         }

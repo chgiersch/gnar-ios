@@ -28,7 +28,7 @@
         <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
     </entity>
     <entity name="LineScore" representedClassName="LineScore" syncable="YES">
-        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="snowLevel" optional="YES" attributeType="String"/>
         <relationship name="lineWorth" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LineWorth"/>
         <relationship name="score" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Score" inverseName="lineScore" inverseEntity="Score"/>
