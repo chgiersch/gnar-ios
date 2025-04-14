@@ -10,6 +10,7 @@ import SwiftUI
 
 struct RootView: View {
     @ObservedObject var appState: AppState
+    @EnvironmentObject var launchManager: LaunchStateManager
     var contentViewModel: ContentViewModel?
 
     var body: some View {
@@ -20,6 +21,7 @@ struct RootView: View {
                     .transition(.opacity)
             } else {
                 LoadingScreen()
+                    .environmentObject(launchManager)
                     .transition(.opacity)
             }
         }

@@ -174,16 +174,20 @@ struct ScoreEntryView: View {
                         RoundScoreButton(title: "Line", systemImage: "mountain.2.fill") {
                             isShowingLineWorthPicker = true
                         }
+                        .accessibilityIdentifier("Line")
                     }
                     RoundScoreButton(title: "Trick", systemImage: "figure.skiing.downhill") {
                         isShowingTrickPicker = true
                     }
+                    .accessibilityIdentifier("Trick")
                     RoundScoreButton(title: "ECP", systemImage: "star.fill") {
                         isShowingECPPicker = true
                     }
+                    .accessibilityIdentifier("ECP")
                     RoundScoreButton(title: "Penalty", systemImage: "exclamationmark.triangle.fill") {
                         isShowingPenaltyPicker = true
                     }
+                    .accessibilityIdentifier("Penalty")
                 }
                 .padding(.horizontal)
             }

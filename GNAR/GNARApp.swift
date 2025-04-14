@@ -39,6 +39,7 @@ struct GNARApp: App {
             )
             .environment(\.managedObjectContext, coreData.viewContext)
             .environmentObject(appState)
+            .environmentObject(launchManager)
             .task {
                 await launchManager.beginLaunchSequence()
                 await MainActor.run {
@@ -59,44 +60,6 @@ struct GNARApp: App {
         }
         await deleteAllMountains()
         await deleteAllGameSessions()
-    }
-
-    // MARK: - Data Seeding
-    func loadInitialSeedData() async {
-        print("🚀 Starting initial seed data load.")
-        if UserDefaults.standard.hasSeededMountains {
-            await MainActor.run {
-                self.contentViewModel = ContentViewModel(coreData: coreData)
-                appState.mountainSeedingComplete = true
-                appState.isReady = true
-                print("✅ Mountains already seeded. App is ready.")
-            }
-            return
-        }
-
-        let context = coreData.backgroundContext
-        await context.perform {
-            let globalVersion = "v1.0"
-            let squallywoodVersion = "v1.0"
-
-            if SeedVersionManager.shared.shouldLoadSeed(for: "global", newVersion: globalVersion) {
-                JSONLoader.loadMountain(named: "Global", context: context)
-                SeedVersionManager.shared.markVersion(globalVersion, for: "global")
-            }
-
-            if SeedVersionManager.shared.shouldLoadSeed(for: "squallywood-mountain", newVersion: squallywoodVersion) {
-                JSONLoader.loadMountain(named: "SquallywoodMountain", context: context)
-                SeedVersionManager.shared.markVersion(squallywoodVersion, for: "squallywood-mountain")
-            }
-        }
-
-        await MainActor.run {
-            self.contentViewModel = ContentViewModel(coreData: coreData)
-            appState.mountainSeedingComplete = true
-            appState.isReady = true
-            UserDefaults.standard.hasSeededMountains = true
-            print("✅ Initial seed data loaded. App is ready.")
-        }
     }
 
     func deleteAllMountains() async {

@@ -53,6 +53,7 @@ struct LineWorthPickerView: View {
                                 .cornerRadius(8)
                             }
                             .buttonStyle(.plain)
+                            .accessibilityIdentifier("snow-level-\(level.rawValue)")
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -79,7 +80,8 @@ struct LineWorthPickerView: View {
                 // MARK: - List of Available Lines
                 SectionedList(viewModel: viewModel)
             }
-            .navigationTitle("Select Line")
+            .navigationTitle("Select a Line")
+            .accessibilityIdentifier("LineWorthPickerView")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -90,6 +92,7 @@ struct LineWorthPickerView: View {
                                 dismiss() // Dismiss the sheet
                             }
                         }
+                        .accessibilityIdentifier("AddLineButton")
                     }
                 }
             }
@@ -144,6 +147,7 @@ struct LineWorthPickerView: View {
                         .onTapGesture {
                             viewModel.select(line)
                         }
+                        .accessibilityIdentifier("line-cell-\(line.name.replacingOccurrences(of: " ", with: "-").lowercased())")
                     }
                 }
             }

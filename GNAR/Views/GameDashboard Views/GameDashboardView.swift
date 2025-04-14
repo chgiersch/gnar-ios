@@ -44,6 +44,7 @@ struct GameDashboardView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .accessibilityIdentifier("AddScoreButton")
                 }
             }
             .sheet(isPresented: $viewModel.showingScoreEntry) {

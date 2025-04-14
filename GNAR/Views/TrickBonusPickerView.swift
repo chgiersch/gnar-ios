@@ -45,6 +45,7 @@ struct TrickBonusPickerView: View {
                         selectedBonuses = viewModel.selectedBonuses
                         dismiss()
                     }
+                    .accessibilityIdentifier("AddTrickButton")
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
@@ -52,6 +53,7 @@ struct TrickBonusPickerView: View {
                         selectedBonuses = []
                         dismiss()
                     }
+                    .accessibilityIdentifier("CancelTrickButton")
                 }
             }
         }

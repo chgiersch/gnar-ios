@@ -30,7 +30,7 @@ struct GameBuilderView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("Select Area")) {
+                Section(header: Text("SELECT AREA")) {
                     ForEach(viewModel.mountains) { mountain in
                         MountainRow(
                             mountain: mountain,
@@ -41,7 +41,7 @@ struct GameBuilderView: View {
                     }
                 }
 
-                Section(header: Text("Players")) {
+                Section(header: Text("PLAYERS")) {
                     ForEach(Array(viewModel.playerNames.enumerated()), id: \.offset) { index, _ in
                         HStack {
                             TextField("You", text: $viewModel.playerNames[index])
@@ -79,6 +79,7 @@ struct GameBuilderView: View {
                             dismiss()
                         }
                     }
+                    .accessibilityIdentifier("Start")
                     .disabled(viewModel.playerNames.allSatisfy { $0.trimmingCharacters(in: .whitespaces).isEmpty })
                 }
             }
@@ -104,6 +105,7 @@ private struct MountainRow: View {
             }
         }
         .contentShape(Rectangle())
+        .accessibilityIdentifier("mountain-row-\(mountain.id)")
         .onTapGesture {
             onTap()
         }

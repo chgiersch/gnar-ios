@@ -46,12 +46,14 @@ struct PenaltyPickerView: View {
                         selectedPenalties = viewModel.selectedPenalties
                         dismiss()
                     }
+                    .accessibilityIdentifier("AddPenaltyButton")
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         selectedPenalties = []
                         dismiss()
                     }
+                    .accessibilityIdentifier("CancelPenaltyButton")
                 }
             }
         }

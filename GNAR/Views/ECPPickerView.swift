@@ -76,12 +76,14 @@ struct ECPPickerView: View {
                         selectedECPs = viewModel.selectedECPs
                         dismiss()
                     }
+                    .accessibilityIdentifier("AddECPButton")
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         selectedECPs = []
                         dismiss()
                     }
+                    .accessibilityIdentifier("CancelECPButton")
                 }
             }
         }

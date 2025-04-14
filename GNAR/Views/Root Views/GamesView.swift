@@ -40,6 +40,7 @@ struct GamesView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .padding(.horizontal)
                 }
+                .accessibilityIdentifier("New Game")
                 .padding(.bottom, 8)
             }
         }

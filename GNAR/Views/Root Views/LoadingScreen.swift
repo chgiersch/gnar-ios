@@ -5,10 +5,10 @@
 //  Created by Chris Giersch on 4/7/25.
 //
 
-
 import SwiftUI
 
 struct LoadingScreen: View {
+    @EnvironmentObject private var launchManager: LaunchStateManager
     @State private var skiAngle: Double = 0
     @State private var boardAngle: Double = 0
     let timer = Timer.publish(every: 0.016, on: .main, in: .common).autoconnect() // ~60 FPS
@@ -38,10 +38,18 @@ struct LoadingScreen: View {
                         .frame(width: 48, height: 48)
                         .rotationEffect(.degrees(boardAngle))
                 }
-
-                ProgressView("Loading Mountains...")
-                    .font(.headline)
-                    .padding(.top, 8)
+                
+                VStack(spacing: 8) {
+                    ProgressView(value: launchManager.loadingProgress, total: 1.0)
+                        .frame(width: 200)
+                        .progressViewStyle(LinearProgressViewStyle())
+                        .tint(.accentColor)
+                    
+                    Text(launchManager.loadingMessage)
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.top, 8)
             }
             .onReceive(timer) { _ in
                 skiAngle += 2
@@ -49,4 +57,16 @@ struct LoadingScreen: View {
             }
         }
     }
+}
+
+// Preview
+#Preview {
+    LoadingScreen()
+        .environmentObject(LaunchStateManager(
+            coreData: CoreDataContexts(
+                viewContext: PersistenceController.preview.container.viewContext,
+                backgroundContext: PersistenceController.preview.container.newBackgroundContext()
+            ),
+            appState: AppState()
+        ))
 }

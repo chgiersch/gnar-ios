@@ -23,7 +23,7 @@ final class GNARUITests: XCTestCase {
     }
 
     @MainActor
-    func testExample() throws {
+    func testLaunch() throws {
         // UI tests must launch the application that they test.
         let app = XCUIApplication()
         app.launch()
