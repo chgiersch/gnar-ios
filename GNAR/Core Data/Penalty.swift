@@ -24,12 +24,12 @@ public class Penalty: NSManagedObject, Identifiable, Decodable {
     }
 
     required convenience public init(from decoder: Decoder) throws {
-        guard let context = decoder.userInfo[CodingUserInfoKey.context!] as? NSManagedObjectContext else {
+        guard let managedObjectContext = decoder.userInfo[CodingUserInfoKey.context!] as? NSManagedObjectContext else {
             fatalError("❌ Missing Core Data context while decoding Penalty")
         }
 
-        let entity = NSEntityDescription.entity(forEntityName: "Penalty", in: context)!
-        self.init(entity: entity, insertInto: context)
+        let entity = NSEntityDescription.entity(forEntityName: "Penalty", in: managedObjectContext)!
+        self.init(entity: entity, insertInto: managedObjectContext)
 
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = UUID()

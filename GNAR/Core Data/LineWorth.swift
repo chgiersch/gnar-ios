@@ -29,12 +29,12 @@ public class LineWorth: NSManagedObject, Identifiable, Decodable {
     }
 
     required convenience public init(from decoder: Decoder) throws {
-        guard let context = decoder.userInfo[CodingUserInfoKey.context!] as? NSManagedObjectContext else {
+        guard let managedObjectContext = decoder.userInfo[CodingUserInfoKey.context!] as? NSManagedObjectContext else {
             fatalError("Failed to decode LineWorth due to missing context.")
         }
 
-        let entity = NSEntityDescription.entity(forEntityName: "LineWorth", in: context)!
-        self.init(entity: entity, insertInto: context)
+        let entity = NSEntityDescription.entity(forEntityName: "LineWorth", in: managedObjectContext)!
+        self.init(entity: entity, insertInto: managedObjectContext)
 
         self.id = UUID()
         let container = try decoder.container(keyedBy: CodingKeys.self)

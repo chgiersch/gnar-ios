@@ -12,185 +12,149 @@ import CoreData
 
 @MainActor
 class ScoreEntryViewModel: ObservableObject {
-    @Published var selectedLineScore: LineScore?
+    // MARK: - Properties
+    
+    let gameSession: GameSession
+    let viewContext: NSManagedObjectContext
+    let selectedPlayer: Player
+    
     @Published var selectedTricks: [TrickBonus] = []
     @Published var selectedECPs: [ECP] = []
     @Published var selectedPenalties: [Penalty] = []
-
-    let context: NSManagedObjectContext
-    let session: GameSession
-    var editingScore: Score? = nil
-
-    var totalPoints: Int {
-        let linePoints = selectedLineScore?.points ?? 0
-        let trickPoints = selectedTricks.reduce(0) { $0 + $1.points }
-        let ecpPoints = selectedECPs.reduce(0) { $0 + $1.points }
-        let penaltyPoints = selectedPenalties.reduce(0) { $0 + $1.points }
-        return Int(Int32(linePoints) + trickPoints + ecpPoints - penaltyPoints)
-    }
+    @Published var error: Error?
     
-    func points(for lineWorth: LineWorth, snowLevel: SnowLevel) -> Int {
-        switch snowLevel {
-        case .low:
-            return Int(truncating: lineWorth.basePointsLow ?? 0)
-        case .medium:
-            return Int(truncating: lineWorth.basePointsMedium ?? 0)
-        case .high:
-            return Int(truncating: lineWorth.basePointsHigh ?? 0)
-        }
-    }
+    // MARK: - State
+    @Published var selectedLine: LineWorth?
+    @Published var selectedSnowLevel: SnowLevel = .medium
     
-    init(session: GameSession, context: NSManagedObjectContext) {
-        self.session = session
-        self.context = context
-    }
-            
-    func removeLine() { selectedLineScore = nil }
-    func removeTrick(at index: Int) { selectedTricks.remove(at: index) }
-    func removeECP(at index: Int) { selectedECPs.remove(at: index) }
-    func removePenalty(at index: Int) { selectedPenalties.remove(at: index) }
-
-    /// Creates and saves a Core Data Score based on current selections
-    func addScore(for selectedPlayer: Player) -> Score {
-        print("🔄 Creating new Score entity...")
-        let score = Score(context: context)
-        score.id = UUID()
-        score.playerID = selectedPlayer.id
-        score.lineScore = selectedLineScore
-        score.timestamp = Date()
+    // MARK: - Computed Properties
+    var hasSelectedLine: Bool { selectedLine != nil }
+    
+    var currentScoreValue: Int {
+        var total = 0
         
-        /// Link to the current game session on both sides
-        score.gameSession = session
-        session.addToScores(score)
-
-        /// Add trick bonuses
+        // Add line points
+        if let line = selectedLine {
+            switch selectedSnowLevel {
+            case .low:
+                total += Int(truncating: line.basePointsLow ?? 0)
+            case .medium:
+                total += Int(truncating: line.basePointsMedium ?? 0)
+            case .high:
+                total += Int(truncating: line.basePointsHigh ?? 0)
+            }
+        }
+        
+        // Add trick points
+        total += selectedTricks.reduce(0) { $0 + Int($1.points) }
+        
+        // Add ECP points
+        total += selectedECPs.reduce(0) { $0 + Int($1.points) }
+        
+        // Subtract penalty points
+        total -= selectedPenalties.reduce(0) { $0 + Int($1.points) }
+        
+        return total
+    }
+    
+    var scoreValueLabel: String {
+        "TOTAL SCORE"
+    }
+    
+    var canAddScore: Bool {
+        selectedLine != nil && currentScoreValue > 0
+    }
+    
+    // MARK: - Initialization
+    
+    init(selectedPlayer: Player, gameSession: GameSession, viewContext: NSManagedObjectContext) {
+        self.selectedPlayer = selectedPlayer
+        self.gameSession = gameSession
+        self.viewContext = viewContext
+    }
+    
+    // MARK: - Score Management
+    
+    func saveCurrentScore() async throws {
+        let score = Score(context: viewContext)
+        score.id = UUID()
+        score.timestamp = Date()
+        score.player = selectedPlayer
+        score.gameSession = gameSession
+        
+        // Add line score if selected
+        var linePoints: Int32 = 0
+        if let line = selectedLine {
+            let lineScore = LineScore(context: viewContext)
+            lineScore.id = UUID()
+            lineScore.lineWorth = line
+            lineScore.snowLevel = selectedSnowLevel.rawValue
+            switch selectedSnowLevel {
+            case .low:
+                lineScore.points = line.basePointsLow?.int32Value ?? 0
+            case .medium:
+                lineScore.points = line.basePointsMedium?.int32Value ?? 0
+            case .high:
+                lineScore.points = line.basePointsHigh?.int32Value ?? 0
+            }
+            score.lineScore = lineScore
+            linePoints = lineScore.points
+        }
+        
+        // Add trick bonus scores
+        var totalTrickPoints: Int32 = 0
         for trick in selectedTricks {
-            print("➕ Adding TrickBonus: \(trick.name)")
-            score.addTrickBonusScore(trick, context: context)
+            let trickScore = TrickBonusScore(context: viewContext)
+            trickScore.id = UUID()
+            trickScore.timestamp = Date()
+            trickScore.trickBonus = trick
+            trickScore.points = trick.points
+            score.addToTrickBonusScores(trickScore)
+            totalTrickPoints += trick.points
         }
-
-        /// Add ECPs
+        
+        // Add ECP scores
+        var totalECPPoints: Int32 = 0
         for ecp in selectedECPs {
-            print("➕ Adding ECP: \(ecp.name)")
-            score.addECPScore(ecp, context: context)
+            let ecpScore = ECPScore(context: viewContext)
+            ecpScore.id = UUID()
+            ecpScore.timestamp = Date()
+            ecpScore.ecp = ecp
+            ecpScore.points = ecp.points
+            score.addToEcpScores(ecpScore)
+            totalECPPoints += ecp.points
         }
-
-        /// Add penalties
+        
+        // Add penalty scores
+        var totalPenaltyPoints: Int32 = 0
         for penalty in selectedPenalties {
-            print("➕ Adding Penalty: \(penalty.name)")
-            score.addPenaltyScore(penalty, context: context)
+            let penaltyScore = PenaltyScore(context: viewContext)
+            penaltyScore.id = UUID()
+            penaltyScore.timestamp = Date()
+            penaltyScore.penalty = penalty
+            penaltyScore.points = penalty.points
+            score.addToPenaltyScores(penaltyScore)
+            totalPenaltyPoints += penalty.points
         }
-
-        do {
-            try context.save()
-            print("💾 Score saved successfully")
-        } catch {
-            context.rollback()
-            print("❌ Failed to save score: \(error)")
-        }
-
-        return score
+        
+        // Calculate and store final scores
+        score.proScore = linePoints + totalTrickPoints + totalECPPoints - totalPenaltyPoints
+        score.gnarScore = abs(linePoints) + abs(totalTrickPoints) + abs(totalECPPoints) + abs(totalPenaltyPoints)
+        
+        try viewContext.save()
     }
     
-    func saveScore(for selectedPlayer: Player) -> Score {
-        if let score = editingScore {
-            print("✏️ Editing existing Score")
-
-            // Update player and session references if needed
-            score.playerID = selectedPlayer.id
-            score.timestamp = Date()
-            score.gameSession = session
-
-            // Clear existing associations
-            score.lineScore = nil
-            score.setValue(NSSet(), forKey: "trickBonusScores")
-            score.setValue(NSSet(), forKey: "ecpScores")
-            score.setValue(NSSet(), forKey: "penaltyScores")
-
-            // Re-apply LineScore if selected
-            if let selectedLine = selectedLineScore {
-                score.lineScore = selectedLine
-            }
-
-            // Re-add Tricks
-            for trick in selectedTricks {
-                score.addTrickBonusScore(trick, context: context)
-            }
-
-            // Re-add ECPs
-            for ecp in selectedECPs {
-                score.addECPScore(ecp, context: context)
-            }
-
-            // Re-add Penalties
-            for penalty in selectedPenalties {
-                score.addPenaltyScore(penalty, context: context)
-            }
-
-            try? context.save()
-            return score
-
-        } else {
-            return addScore(for: selectedPlayer) 
-        }
+    // MARK: - Actions
+    func setSelectedLine(_ line: LineWorth, snowLevel: SnowLevel) {
+        selectedLine = line
+        selectedSnowLevel = snowLevel
     }
     
-    func load(from score: Score) {
-        print("📦 Loading Score into ViewModel:", score.id?.uuidString ?? "nil")
-        self.editingScore = score
-        self.selectedLineScore = score.lineScore
-
-        if let trickScores = score.trickBonusScores?.allObjects as? [TrickBonusScore] {
-            self.selectedTricks = trickScores.compactMap { $0.trickBonus }
-            print("🎿 Loaded Tricks:", self.selectedTricks.map { $0.name })
-        }
-
-        if let ecpScores = score.ecpScores?.allObjects as? [ECPScore] {
-            self.selectedECPs = ecpScores.compactMap { $0.ecp }
-            print("🌟 Loaded ECPs:", self.selectedECPs.map { $0.name })
-        }
-
-        if let penaltyScores = score.penaltyScores?.allObjects as? [PenaltyScore] {
-            self.selectedPenalties = penaltyScores.compactMap { $0.penalty }
-            print("⚠️ Loaded Penalties:", self.selectedPenalties.map { $0.name })
-        }
-    }
-
-    // MARK: - Fetching Core Data Entities
-
-    func fetchTrickBonuses() -> [TrickBonus] {
-        let request: NSFetchRequest<TrickBonus> = TrickBonus.fetchRequest()
-        do {
-            let trickBonuses = try context.fetch(request)
-            print("✅ Fetched \(trickBonuses.count) Trick Bonuses")
-            return trickBonuses
-        } catch {
-            print("❌ Failed to fetch Trick Bonuses: \(error)")
-            return []
-        }
-    }
-
-    func fetchECPs() -> [ECP] {
-        let request: NSFetchRequest<ECP> = ECP.fetchRequest()
-        do {
-            let ecps = try context.fetch(request)
-            print("✅ Fetched \(ecps.count) ECPs")
-            return ecps
-        } catch {
-            print("❌ Failed to fetch ECPs: \(error)")
-            return []
-        }
-    }
-
-    func fetchPenalties() -> [Penalty] {
-        let request: NSFetchRequest<Penalty> = Penalty.fetchRequest()
-        do {
-            let penalties = try context.fetch(request)
-            print("✅ Fetched \(penalties.count) Penalties")
-            return penalties
-        } catch {
-            print("❌ Failed to fetch Penalties: \(error)")
-            return []
-        }
+    func resetSelection() {
+        selectedLine = nil
+        selectedSnowLevel = .medium
+        selectedTricks = []
+        selectedECPs = []
+        selectedPenalties = []
     }
 }

@@ -12,7 +12,7 @@ struct ScoreHistoryRow: View {
     let score: Score
     let isExpanded: Bool
     let onTap: () -> Void
-    let onDelete: () -> Void
+    let onDelete: () async -> Void
     let session: GameSession
 
     var body: some View {
@@ -52,7 +52,7 @@ struct ScoreHistoryRow: View {
                 Spacer()
 
                 if !isExpanded {
-                    Text("\(score.gnarScore) pts")
+                    Text("\(score.proScore) pts")
                         .font(.subheadline)
                         .bold()
                         .padding(.leading, 8)
@@ -97,7 +97,7 @@ struct ScoreHistoryRow: View {
                     )
                     HStack {
                         Spacer()
-                        Text("Total: \(score.gnarScore) pts")
+                        Text("Total: \(score.proScore) pts")
                             .font(.subheadline)
                             .bold()
                     }
@@ -110,6 +110,15 @@ struct ScoreHistoryRow: View {
         .contentShape(Rectangle()) /// Make full cell tappable
         .onTapGesture { onTap() } /// Toggle expansion
         .animation(.easeInOut, value: isExpanded)
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                Task {
+                    await onDelete()
+                }
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
     }
 }
 

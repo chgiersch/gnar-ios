@@ -9,12 +9,13 @@
 import SwiftUI
 import CoreData
 
+@MainActor
 class ContentViewModel: ObservableObject {
     @Published var mountainPreviews: [MountainPreview] = [] {
         didSet { print("📥 mountainPreviews updated at", Date()) }
     }
     @Published var globalMountainPreview: MountainPreview? {
-        didSet { print("📥 globalMounatinPreviews updated at", Date()) }
+        didSet { print("📥 globalMountainPreview updated at", Date()) }
     }
     @Published var activeSession: GameSession? = nil {
         didSet { print("📥 activeSession updated at", Date()) }
@@ -38,123 +39,155 @@ class ContentViewModel: ObservableObject {
         didSet { print("📥 hasLoadedSessions updated at", Date()) }
     }
 
-    let coreData: CoreDataContexts
+    // Core data stack
+    let coreDataStack: CoreDataStack
     
+    // State
     @Published var selectedTab: Tab = .home {
         didSet {
-            if ![.home, .games, .profile].contains(selectedTab) {
-                print("❗ Invalid tab selected. Reverting to .home")
-                selectedTab = .home
+            if selectedTab == .home {
+                Task {
+                    await loadMountains()
+                }
             }
         }
     }
+    
+    // Data
+    @Published var mountains: [Mountain] = []
+    @Published var selectedSession: GameSession?
+    @Published var isLoading = false
+    @Published var error: Error?
     
     enum Tab: Hashable {
         case home, games, profile
     }
 
-    init(coreData: CoreDataContexts) {
-        self.coreData = coreData
-
+    init(coreDataStack: CoreDataStack) {
+        self.coreDataStack = coreDataStack
         Task {
-            print("🏔️ Preloading mountains from ContentViewModel")
             await loadMountains()
         }
     }
     
+    // MARK: - Mountain Management
+    
     func loadMountains() async {
-        let request: NSFetchRequest<Mountain> = Mountain.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \Mountain.name, ascending: true)]
-
         do {
-            let fetched = try coreData.viewContext.fetch(request)
+            let request = Mountain.fetchRequest()
+            mountains = try await coreDataStack.viewContext.fetch(request)
             await MainActor.run {
-                var previews: [MountainPreview] = []
-
-                for mountain in fetched {
-                    let preview = MountainPreview(
-                        id: mountain.id,
-                        name: mountain.name == "Global" ? "Free Range" : mountain.name,
-                        isGlobal: mountain.isGlobal
-                    )
-                    previews.append(preview)
+                self.mountainPreviews = mountains.map { mountain in
+                    return MountainPreview(mountain: mountain)
                 }
-
-                if let global = previews.first(where: { $0.isGlobal }) {
-                    self.globalMountainPreview = global
-                    self.mountainPreviews = [global] + previews.filter { !$0.isGlobal }
-                } else {
-                    self.globalMountainPreview = nil
-                    self.mountainPreviews = previews
-                }
-
-                print("🗻 Loaded \(self.mountainPreviews.count) mountains (global first if present)")
+                
+                // Set global mountain
+                self.globalMountainPreview = mountains
+                    .first(where: { $0.isGlobal })
+                    .map { MountainPreview(mountain: $0) }
             }
         } catch {
-            print("❌ Failed to fetch mountains: \(error)")
+            self.error = error
         }
     }
-
-    func loadSessionsIfNeeded() async {
-        guard !hasLoadedSessions else { return }
-        hasLoadedSessions = true
-        await loadInitialSessions()
-    }
-
-    func loadInitialSessions() async {
-        await MainActor.run { self.isLoadingSessions = true }
-
-        let request = NSFetchRequest<GameSession>(entityName: "GameSession")
-        request.sortDescriptors = [NSSortDescriptor(key: "startDate", ascending: false)]
-        request.fetchLimit = 20
-//        request.relationshipKeyPathsForPrefetching = ["players"]
-        request.returnsObjectsAsFaults = false
-
+    
+    // MARK: - Session Management
+    
+    func loadSessionPreviews() async {
         do {
-            let start = Date()
-            print("📡 Started loading sessions at", start)
-            let sessions = try await coreData.viewContext.perform {
-                try self.coreData.viewContext.fetch(request)
-            }
-            let end = Date()
-            print("✅ Finished loading sessions at", end)
-            print("⏱ Session load took \(end.timeIntervalSince(start))s")
-
-            let previews = sessions.compactMap { GameSessionPreview(from: $0) }
-
-            await MainActor.run {
-                self.sessionPreviews = previews
-                self.visibleSessions = Array(previews.prefix(visibleCount))
-                self.isLoadingSessions = false
-            }
-
-            print("✅ Previews loaded: \(previews.count)")
+            let request = GameSession.fetchRequest()
+            let sessions = try await coreDataStack.viewContext.fetch(request)
+            sessionPreviews = sessions.map { GameSessionPreview(from: $0) }
         } catch {
-            await MainActor.run { self.isLoadingSessions = false }
-            print("❌ Failed to fetch session previews: \(error)")
+            self.error = error
+        }
+    }
+    
+    func loadSession(id: UUID) async {
+        do {
+            let request = GameSession.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+            let sessions = try await coreDataStack.viewContext.fetch(request)
+            selectedSession = sessions.first
+        } catch {
+            self.error = error
+        }
+    }
+    
+    func addScore(_ score: Score, to session: GameSession) async throws {
+        session.addToScores(score)
+        try await coreDataStack.viewContext.save()
+    }
+    
+    func createSession(mountainName: String, players: [Player]) async throws -> GameSession {
+        let session = GameSession(context: coreDataStack.viewContext)
+        session.id = UUID()
+        session.mountainName = mountainName
+        session.startDate = Date()
+        
+        // Add players to the game session
+        for player in players {
+            session.addToPlayers(player)
+        }
+        
+        try await coreDataStack.viewContext.save()
+        return session
+    }
+    
+    // MARK: - Sessions
+    
+    func loadSessionsIfNeeded() async {
+        if !hasLoadedSessions || sessionPreviews == nil || sessionPreviews?.isEmpty == true {
+            await loadInitialSessions()
+        }
+        hasLoadedSessions = true
+        isLoadingSessions = false
+    }
+    
+    func loadInitialSessions() async {
+        print("📱 Starting to load initial sessions...")
+        isLoadingSessions = true
+        do {
+            let request = GameSession.fetchRequest()
+            request.sortDescriptors = [NSSortDescriptor(keyPath: \GameSession.startDate, ascending: false)]
+            request.fetchLimit = 20
+            let sessions = try await coreDataStack.viewContext.fetch(request)
+            
+            print("📱 Found \(sessions.count) sessions in Core Data")
+            sessionPreviews = sessions.map { session in
+                let preview = GameSessionPreview(from: session)
+                print("📱 Created preview for session: \(session.id.uuidString)")
+                print("📱 - Mountain: \(preview.mountainName)")
+                print("📱 - Players: \(preview.playerCount)")
+                print("📱 - Date: \(preview.startDate)")
+                return preview
+            }
+            updateVisibleSessions()
+            print("📱 Updated visible sessions count: \(visibleSessions?.count ?? 0)")
+        } catch {
+            print("📱 Error loading sessions: \(error)")
+            self.error = error
+            isLoadingSessions = false
         }
     }
     
     func loadMoreSessions() {
-        guard let previews = sessionPreviews else { return }
-        visibleCount += 10
-        visibleSessions = Array(previews.prefix(visibleCount))
+        updateVisibleSessions(count: visibleCount + 10)
     }
-
-    func loadSession(by id: UUID) {
-        let request: NSFetchRequest<GameSession> = GameSession.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-        request.fetchLimit = 1
+    
+    func updateVisibleSessions(count: Int? = nil) {
+        if let count = count {
+            visibleCount = count
+        }
         
-        do {
-            if let session = try coreData.viewContext.fetch(request).first {
-                print("🎯 Loaded session \(id)")
-                activeSession = session
-            } else {
-                print("⚠️ No session found for ID \(id)")
+        if let allSessions = sessionPreviews {
+            visibleSessions = Array(allSessions.prefix(visibleCount))
+            print("📱 Updated visible sessions:")
+            visibleSessions?.forEach { session in
+                print("📱 - Session: \(session.mountainName)")
+                print("📱   Players: \(session.playerCount)")
+                print("📱   Date: \(session.startDate)")
             }
-        } catch {
-            print("❌ Failed to fetch session: \(error)")
         }
     }
 }

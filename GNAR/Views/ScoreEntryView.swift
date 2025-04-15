@@ -10,264 +10,291 @@ import SwiftUI
 import CoreData
 
 struct ScoreEntryView: View {
+    // MARK: - Properties
+    
+    let selectedPlayer: Player
+    let gameSession: GameSession
+    let onDismiss: () -> Void
+    @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var viewModel: ScoreEntryViewModel
-    @Environment(\.dismiss) private var dismiss
-    @State private var isShowingLineWorthPicker = false
-    @State private var isShowingTrickPicker = false
-    @State private var isShowingECPPicker = false
-    @State private var isShowingPenaltyPicker = false
     
-    @Binding var selectedPlayerID: NSManagedObjectID
-    let allPlayers: [Player]
+    // MARK: - UI State
+    @State private var showLinesView = false
+    @State private var showTricksView = false
+    @State private var showECPsView = false
+    @State private var showPenaltiesView = false
     
-    let onScoreAdded: (Score) -> Void
-    let isFreeRange: Bool
+    // Simply define FetchRequests directly - they'll get context from environment
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \LineWorth.name, ascending: true)])
+    private var lines: FetchedResults<LineWorth>
     
-    init(
-        selectedPlayerID: Binding<NSManagedObjectID>,
-        allPlayers: [Player],
-        session: GameSession,
-        context: NSManagedObjectContext,
-        isFreeRange: Bool,
-        editingScore: Score? = nil,
-        onScoreAdded: @escaping (Score) -> Void
-    ) {
-        let vm = ScoreEntryViewModel(session: session, context: context)
-        if let editing = editingScore {
-            vm.load(from: editing)
-        }
-
-        _viewModel = StateObject(wrappedValue: vm)
-        self._selectedPlayerID = selectedPlayerID
-        self.allPlayers = allPlayers
-        self.onScoreAdded = onScoreAdded
-        self.isFreeRange = isFreeRange
-    }
-
-    private var headerSection: some View {
-        Section("Scoring For") {
-            Picker("Player", selection: $selectedPlayerID) {
-                ForEach(allPlayers) { player in
-                    Text(player.name).tag(player.objectID)
-                }
-            }
-            .pickerStyle(.menu)
-        }
-    }
-
-    private var lineWorthSection: some View {
-        if let line = viewModel.selectedLineScore {
-            return AnyView(Section("Line Worth") {
-                HStack {
-                    HStack {
-                        if let lineWorth = line.lineWorth {
-                            Text(lineWorth.name)
-                                .font(.headline)
-                        } else {
-                            Text("No Line Worth")
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Text("\(viewModel.points(for: line.lineWorth!, snowLevel: SnowLevel(rawValue: line.snowLevel!)!))")
-                            .foregroundColor(SnowLevel(rawValue: line.snowLevel!)?.displayColor ?? .secondary)
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        isShowingLineWorthPicker = true
-                    }
-
-                    Button(action: viewModel.removeLine) {
-                        Image(systemName: "trash")
-                            .foregroundColor(.red)
-                    }
-                }
-            })
-        } else {
-            return AnyView(EmptyView())
-        }
-    }
-
-    private var tricksSection: some View {
-        if !viewModel.selectedTricks.isEmpty {
-            return AnyView(Section("Tricks") {
-                ForEach(Array(viewModel.selectedTricks.enumerated()), id: \.offset) { index, trick in
-                    HStack {
-                        Text(trick.name)
-                        Spacer()
-                        Text("\(trick.points)")
-                        Button(action: { viewModel.removeTrick(at: index) }) {
-                            Image(systemName: "trash")
-                                .foregroundColor(.red)
-                        }
-                    }
-                }
-            })
-        } else {
-            return AnyView(EmptyView())
-        }
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \TrickBonus.name, ascending: true)])
+    private var tricks: FetchedResults<TrickBonus>
+    
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \ECP.name, ascending: true)])
+    private var ecps: FetchedResults<ECP>
+    
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \Penalty.name, ascending: true)])
+    private var penalties: FetchedResults<Penalty>
+    
+    // MARK: - Initialization
+    
+    init(selectedPlayer: Player, gameSession: GameSession, onDismiss: @escaping () -> Void) {
+        self.selectedPlayer = selectedPlayer
+        self.gameSession = gameSession
+        self.onDismiss = onDismiss
+        _viewModel = StateObject(wrappedValue: ScoreEntryViewModel(
+            selectedPlayer: selectedPlayer,
+            gameSession: gameSession,
+            viewContext: CoreDataStack.shared.viewContext
+        ))
     }
     
-    private var ecpsSection: some View {
-        if !viewModel.selectedECPs.isEmpty {
-            return AnyView(Section("ECPs") {
-                ForEach(Array(viewModel.selectedECPs.enumerated()), id: \.offset) { index, ecp in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(ecp.name)
-                            Text(ecp.descriptionText)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Text("\(ecp.points)")
-                        Button(action: { viewModel.removeECP(at: index) }) {
-                            Image(systemName: "trash")
-                                .foregroundColor(.red)
-                        }
-                    }
-                }
-            })
-        } else {
-            return AnyView(EmptyView())
-        }
-    }
-
-    private var penaltiesSection: some View {
-        if !viewModel.selectedPenalties.isEmpty {
-            return AnyView(Section("Penalties") {
-                ForEach(Array(viewModel.selectedPenalties.enumerated()), id: \.offset) { index, penalty in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(penalty.name)
-                            Text("\(penalty.points)")
-                                .font(.caption)
-                                .foregroundColor(.red)
-                        }
-                        Spacer()
-                        Button(action: { viewModel.removePenalty(at: index) }) {
-                            Image(systemName: "trash")
-                                .foregroundColor(.red)
-                        }
-                    }
-                }
-            })
-        } else {
-            return AnyView(EmptyView())
-        }
-    }
-
+    // MARK: - Body
+    
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
-                Form {
-                    headerSection
-                    if !isFreeRange {
-                        lineWorthSection
-                    }
-                    tricksSection
-                    ecpsSection
-                    penaltiesSection
-                }
-                // MARK: - Quick Action Buttons
-                HStack(spacing: 20) {
-                    if !isFreeRange {
-                        RoundScoreButton(title: "Line", systemImage: "mountain.2.fill") {
-                            isShowingLineWorthPicker = true
+                // Player Header
+                Section {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("PLAYER")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text(selectedPlayer.name)
+                                .font(.headline)
                         }
-                        .accessibilityIdentifier("Line")
+                        Spacer()
+                        if viewModel.hasSelectedLine {
+                            VStack(alignment: .trailing) {
+                                Text("TOTAL")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                                    Text(String(viewModel.currentScoreValue))
+                                        .font(.system(size: 24, weight: .bold))
+                                    Text("PTS")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
                     }
-                    RoundScoreButton(title: "Trick", systemImage: "figure.skiing.downhill") {
-                        isShowingTrickPicker = true
-                    }
-                    .accessibilityIdentifier("Trick")
-                    RoundScoreButton(title: "ECP", systemImage: "star.fill") {
-                        isShowingECPPicker = true
-                    }
-                    .accessibilityIdentifier("ECP")
-                    RoundScoreButton(title: "Penalty", systemImage: "exclamationmark.triangle.fill") {
-                        isShowingPenaltyPicker = true
-                    }
-                    .accessibilityIdentifier("Penalty")
                 }
-                .padding(.horizontal)
+                .padding()
+                
+                // Score Sections
+                ScrollView {
+                    VStack(spacing: 16) {
+                        // Line Section - Only show if not Free Range
+                        if gameSession.mountainName != "Free Range" {
+                            if viewModel.hasSelectedLine {
+                                Section {
+                                    VStack(alignment: .leading) {
+                                        Text("LINE")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                        if let line = viewModel.selectedLine {
+                                            Text(line.name)
+                                                .font(.headline)
+                                        }
+                                        
+                                        Picker("Snow Level", selection: $viewModel.selectedSnowLevel) {
+                                            ForEach(SnowLevel.allCases, id: \.self) { level in
+                                                Text(level.displayName).tag(level)
+                                            }
+                                        }
+                                        .pickerStyle(.segmented)
+                                    }
+                                }
+                                .padding()
+                                .background(Color(.systemBackground))
+                                .cornerRadius(10)
+                                .shadow(radius: 2)
+                            }
+                        }
+                        
+                        // Trick Section
+                        if !viewModel.selectedTricks.isEmpty {
+                            Section {
+                                VStack(alignment: .leading) {
+                                    Text("TRICK BONUS")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    ForEach(viewModel.selectedTricks, id: \.id) { trick in
+                                        HStack {
+                                            Text(trick.name)
+                                                .font(.headline)
+                                            Spacer()
+                                            Text("\(trick.points) PTS")
+                                                .font(.headline)
+                                                .foregroundColor(.orange)
+                                        }
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(Color(.systemBackground))
+                            .cornerRadius(10)
+                            .shadow(radius: 2)
+                        }
+                        
+                        // ECP Section
+                        if !viewModel.selectedECPs.isEmpty {
+                            Section {
+                                VStack(alignment: .leading) {
+                                    Text("EXTRA CREDIT POINTS")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    ForEach(viewModel.selectedECPs, id: \.id) { ecp in
+                                        HStack {
+                                            Text(ecp.name)
+                                                .font(.headline)
+                                            Spacer()
+                                            Text("\(ecp.points) PTS")
+                                                .font(.headline)
+                                                .foregroundColor(.green)
+                                        }
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(Color(.systemBackground))
+                            .cornerRadius(10)
+                            .shadow(radius: 2)
+                        }
+                        
+                        // Penalty Section
+                        if !viewModel.selectedPenalties.isEmpty {
+                            Section {
+                                VStack(alignment: .leading) {
+                                    Text("PENALTY")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    ForEach(viewModel.selectedPenalties, id: \.id) { penalty in
+                                        HStack {
+                                            Text(penalty.name)
+                                                .font(.headline)
+                                            Spacer()
+                                            Text("-\(penalty.points) PTS")
+                                                .font(.headline)
+                                                .foregroundColor(.red)
+                                        }
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(Color(.systemBackground))
+                            .cornerRadius(10)
+                            .shadow(radius: 2)
+                        }
+                    }
+                    .padding()
+                }
+                
+                // Bottom Buttons
+                HStack(spacing: 16) {
+                    if gameSession.mountainName != "Free Range" {
+                        Button(action: { showLinesView = true }) {
+                            VStack {
+                                Image(systemName: "mountain.2")
+                                    .foregroundColor(.blue)
+                                Text("Line")
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    
+                    Button(action: { showTricksView = true }) {
+                        VStack {
+                            Image(systemName: "figure.skiing.downhill")
+                                .foregroundColor(.orange)
+                            Text("Trick")
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Button(action: { showECPsView = true }) {
+                        VStack {
+                            Image(systemName: "star")
+                                .foregroundColor(.green)
+                            Text("ECP")
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Button(action: { showPenaltiesView = true }) {
+                        VStack {
+                            Image(systemName: "exclamationmark.triangle")
+                                .foregroundColor(.red)
+                            Text("Penalty")
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding()
             }
-            .navigationTitle(viewModel.editingScore == nil ? "New Score" : "Edit Score")
+            .navigationTitle("Score Entry")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel") {
+                        onDismiss()
+                    }
                 }
+                
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Claim") {
-                        print("Attempting to add score...")
-                        if let selectedPlayer = allPlayers.first(where: { $0.objectID == selectedPlayerID }) {
-                            let score = viewModel.saveScore(for: selectedPlayer)
-                            onScoreAdded(score)
+                    if viewModel.canAddScore {
+                        Button("Add") {
+                            Task {
+                                do {
+                                    try await viewModel.saveCurrentScore()
+                                    onDismiss()
+                                } catch {
+                                    print("Failed to save score: \(error)")
+                                    // TODO: Show error to user
+                                }
+                            }
                         }
-                        dismiss()
+                        .accessibilityIdentifier("AddScoreButton")
                     }
                 }
             }
-
-            // MARK: - Picker Sheets
-            .sheet(isPresented: $isShowingLineWorthPicker) {
+            .sheet(isPresented: $showLinesView) {
                 LineWorthPickerView(
-                    context: viewModel.context,
-                    selectedLineWorth: viewModel.selectedLineScore?.lineWorth,
-                    selectedSnowLevel: viewModel.selectedLineScore?.snowLevel.flatMap(SnowLevel.init) ?? .medium
-                ) { selectedLineWorth, selectedSnowLevel in
-                    let newLineScore = LineScore.create(
-                        in: viewModel.context,
-                        lineWorth: selectedLineWorth,
-                        snowLevel: selectedSnowLevel
-                    )
-                    viewModel.selectedLineScore = newLineScore
-                    isShowingLineWorthPicker = false
-                }
+                    context: viewModel.viewContext,
+                    selectedLine: $viewModel.selectedLine,
+                    selectedSnowLevel: $viewModel.selectedSnowLevel
+                )
             }
-            .sheet(isPresented: $isShowingTrickPicker) {
+            .sheet(isPresented: $showTricksView) {
                 TrickBonusPickerView(
-                    allTrickBonuses: viewModel.fetchTrickBonuses(),
+                    allTrickBonuses: Array(tricks),
                     selectedBonuses: $viewModel.selectedTricks
                 )
             }
-
-            .sheet(isPresented: $isShowingECPPicker) {
+            .sheet(isPresented: $showECPsView) {
                 ECPPickerView(
-                    allECPs: viewModel.fetchECPs(),
+                    allECPs: Array(ecps),
                     selectedECPs: $viewModel.selectedECPs
                 )
             }
-
-            .sheet(isPresented: $isShowingPenaltyPicker) {
+            .sheet(isPresented: $showPenaltiesView) {
                 PenaltyPickerView(
-                    allPenalties: viewModel.fetchPenalties(),
+                    allPenalties: Array(penalties),
                     selectedPenalties: $viewModel.selectedPenalties
                 )
             }
         }
+        .environment(\.managedObjectContext, viewModel.viewContext)
     }
 }
 
-struct RoundScoreButton: View {
-    let title: String
-    let systemImage: String
-    let action: () -> Void
+#if DEBUG
+// Remove TestMultiSelectionView here
+#endif
 
-    var body: some View {
-        Button(action: action) {
-            VStack {
-                Image(systemName: systemImage)
-                    .font(.system(size: 24))
-                Text(title)
-                    .font(.caption)
-            }
-            .frame(width: 70, height: 70)
-            .background(Color.blue.opacity(0.2))
-            .clipShape(Circle())
-            .foregroundColor(.primary)
-        }
-    }
-}
+
 
 

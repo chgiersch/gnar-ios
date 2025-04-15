@@ -19,8 +19,8 @@ class JSONLoader {
     ///
     /// - Parameters:
     ///   - filename: The name of the bundled JSON file (without `.json` extension)
-    ///   - context: The Core Data context into which the data will be saved
-    static func loadMountain(named filename: String, context: NSManagedObjectContext) {
+    ///   - managedObjectContext: The Core Data context into which the data will be saved
+    static func loadMountain(named filename: String, context managedObjectContext: NSManagedObjectContext) {
         print("🚀 Beginning load of mountain JSON: \(filename).json")
 
         guard let url = Bundle.main.url(forResource: filename, withExtension: "json") else {
@@ -33,11 +33,11 @@ class JSONLoader {
             print("📦 Successfully read JSON data from \(filename).json")
 
             let decoder = JSONDecoder()
-            decoder.userInfo[CodingUserInfoKey.context!] = context
+            decoder.userInfo[CodingUserInfoKey.context!] = managedObjectContext
 
             let payload = try decoder.decode(UniversalMountainPayload.self, from: data)
 
-            let mountain = Mountain(context: context)
+            let mountain = Mountain(context: managedObjectContext)
             mountain.id = payload.id
             mountain.name = payload.name
             let globalMountainIDs: Set<String> = ["Global"]
@@ -49,7 +49,7 @@ class JSONLoader {
             if let bonuses = payload.trickBonuses {
                 print("🎯 Loading \(bonuses.count) Trick Bonuses...")
                 for bonus in bonuses {
-                    let obj = TrickBonus(context: context)
+                    let obj = TrickBonus(context: managedObjectContext)
                     obj.id = UUID()
                     obj.idDescriptor = bonus.id
                     obj.name = bonus.name
@@ -66,7 +66,7 @@ class JSONLoader {
             if let penalties = payload.penalties {
                 print("🛑 Loading \(penalties.count) Penalties...")
                 for penalty in penalties {
-                    let obj = Penalty(context: context)
+                    let obj = Penalty(context: managedObjectContext)
                     obj.id = UUID()
                     obj.idDescriptor = penalty.id
                     obj.name = penalty.name
@@ -82,7 +82,7 @@ class JSONLoader {
             if let ecps = payload.ecps {
                 print("✨ Loading \(ecps.count) ECPs...")
                 for ecp in ecps {
-                    let obj = ECP(context: context)
+                    let obj = ECP(context: managedObjectContext)
                     obj.id = UUID()
                     obj.idDescriptor = ecp.id
                     obj.name = ecp.name
@@ -99,7 +99,7 @@ class JSONLoader {
             if let lines = payload.lineWorths {
                 print("⛷️ Loading \(lines.count) LineWorths...")
                 for line in lines {
-                    let obj = LineWorth(context: context)
+                    let obj = LineWorth(context: managedObjectContext)
                     obj.id = UUID()
                     obj.name = line.name
                     obj.area = line.area
@@ -124,7 +124,7 @@ class JSONLoader {
                 print("✅ LineWorths loaded successfully")
             }
 
-            try context.save()
+            try managedObjectContext.save()
             print("💾 Mountain '\(mountain.name)' saved successfully to Core Data")
 
             if let version = payload.version {
@@ -133,7 +133,7 @@ class JSONLoader {
             }
         } catch {
             print("❌ Failed to load or decode mountain \(filename): \(error.localizedDescription)")
-            context.rollback()
+            managedObjectContext.rollback()
         }
     }
 }

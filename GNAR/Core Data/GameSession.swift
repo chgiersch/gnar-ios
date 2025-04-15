@@ -11,7 +11,7 @@ import CoreData
 
 @objc(GameSession)
 public class GameSession: NSManagedObject, Identifiable {
-    @NSManaged public var id: UUID?
+    @NSManaged public var id: UUID
     @NSManaged public var mountainName: String
     @NSManaged public var startDate: Date?
     @NSManaged public var players: NSSet?
@@ -33,7 +33,7 @@ public class GameSession: NSManagedObject, Identifiable {
         self.startDate = Date()
         self.players = NSSet()
         self.scores = NSSet()
-        print("🆕 New GameSession created with ID: \(self.id?.uuidString ?? "unknown")")
+        print("🆕 New GameSession created with ID: \(self.id.uuidString)")
     }
 }
 

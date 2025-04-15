@@ -20,14 +20,19 @@ struct LeaderboardSection: View {
                     selectedPlayer = player
                 } label: {
                     HStack {
+                        Text("\(summary.rank)")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                            .frame(width: 24)
+                        
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(player.name)
+                            Text(summary.playerName)
                                 .font(.subheadline)
                                 .fontWeight(.medium)
-
+                            
                             HStack(spacing: 12) {
-                                Label("GNAR: \(summary.gnarScore)", systemImage: "sparkles")
-                                Label("Pro: \(summary.proScore)", systemImage: "bolt.fill")
+                                Label("\(summary.proScore) pts", systemImage: "star.fill")
+                                    .foregroundColor(.orange)
                             }
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -39,7 +44,7 @@ struct LeaderboardSection: View {
                     .padding(.horizontal)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(selectedPlayer?.id == player.id ? Color.accentColor.opacity(0.15) : Color.clear)
+                            .fill(selectedPlayer?.id == player?.id ? Color.accentColor.opacity(0.15) : Color.clear)
                     )
                 }
                 .buttonStyle(.plain)

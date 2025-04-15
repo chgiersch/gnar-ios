@@ -14,17 +14,16 @@ final class LaunchStateManager: ObservableObject {
     @Published var loadingProgress: Float = 0.0
     @Published var loadingMessage: String = "Pole wacking..."
 
-    private let coreData: CoreDataContexts
+    private let coreDataStack: CoreDataStack
     private let appState: AppState
 
-    init(coreData: CoreDataContexts, appState: AppState) {
-        self.coreData = coreData
+    init(coreDataStack: CoreDataStack = CoreDataStack.shared, appState: AppState) {
+        self.coreDataStack = coreDataStack
         self.appState = appState
     }
 
     @MainActor
     func beginLaunchSequence() async {
-        // No more forced wait - loading will take as long as it actually needs
         loadingMessage = "Checking data..."
         loadingProgress = 0.1
         
@@ -49,52 +48,30 @@ final class LaunchStateManager: ObservableObject {
         appState.isReady = true
     }
 
+    @MainActor
     private func loadInitialSeedData() async {
-        let totalMountains = 2 // Global and Squallywood
-        var loadedCount = 0
-        
-        let context = coreData.backgroundContext
-        
-        // Load Global mountain
-        let globalVersion = "v1.0"
-        if SeedVersionManager.shared.shouldLoadSeed(for: "global", newVersion: globalVersion) {
-            loadingMessage = "Loading Global mountain..."
-            await loadMountain(named: "Global", context: context)
-            SeedVersionManager.shared.markVersion(globalVersion, for: "global")
+        do {
+            // Define which mountains to load
+            let mountainFiles = ["Global", "SquallywoodMountain"]
             
-            loadedCount += 1
-            await MainActor.run {
-                loadingProgress = 0.2 + (0.6 * (Float(loadedCount) / Float(totalMountains)))
+            // Load mountains with progress updates
+            for (index, filename) in mountainFiles.enumerated() {
+                let progress = Float(index) / Float(mountainFiles.count)
+                self.loadingProgress = 0.2 + (0.6 * progress)
+                self.loadingMessage = "Loading mountains... \(Int(progress * 100))%"
+                
+                // Use the main view context for all operations
+                JSONLoader.loadMountain(named: filename, context: coreDataStack.viewContext)
+                
+                // Save changes
+                try coreDataStack.viewContext.save()
             }
-        }
-        
-        // Load Squallywood mountain
-        let squallywoodVersion = "v1.0"
-        if SeedVersionManager.shared.shouldLoadSeed(for: "squallywood-mountain", newVersion: squallywoodVersion) {
-            loadingMessage = "Loading Squallywood mountain..."
-            await loadMountain(named: "SquallywoodMountain", context: context)
-            SeedVersionManager.shared.markVersion(squallywoodVersion, for: "squallywood-mountain")
             
-            loadedCount += 1
-            await MainActor.run {
-                loadingProgress = 0.2 + (0.6 * (Float(loadedCount) / Float(totalMountains)))
-            }
-        }
-        
-        await MainActor.run {
             UserDefaults.standard.hasSeededMountains = true
-        }
-    }
-    
-    private func loadMountain(named filename: String, context: NSManagedObjectContext) async {
-        await withCheckedContinuation { continuation in
-            Task {
-                // Using Task to run this work on a background thread
-                context.perform {
-                    JSONLoader.loadMountain(named: filename, context: context)
-                    continuation.resume()
-                }
-            }
+        } catch {
+            print("❌ Error loading mountains: \(error.localizedDescription)")
+            // Even with an error, we'll continue and let the app launch
+            self.loadingMessage = "Error loading some data"
         }
     }
 }

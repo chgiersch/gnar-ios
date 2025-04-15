@@ -11,27 +11,28 @@ import CoreData
 
 @objc(ECPScore)
 public class ECPScore: NSManagedObject, Identifiable {
-    @NSManaged public var id: UUID?
-    @NSManaged public var points: Int32
+    @NSManaged public var id: UUID
     @NSManaged public var timestamp: Date?
-
-    // Relationships
+    @NSManaged public var points: Int32
+    @NSManaged public var verified: Bool
+    
     @NSManaged public var ecp: ECP?
-    @NSManaged public var parentScore: Score?
+    @NSManaged public var score: Score?
 }
 
 extension ECPScore {
     @nonobjc public class func fetchRequest() -> NSFetchRequest<ECPScore> {
         return NSFetchRequest<ECPScore>(entityName: "ECPScore")
     }
-
-    static func create(in context: NSManagedObjectContext, ecp: ECP, parentScore: Score) -> ECPScore {
-        let score = ECPScore(context: context)
-        score.id = UUID()
-        score.timestamp = Date()
-        score.points = ecp.points
-        score.ecp = ecp
-        score.parentScore = parentScore
-        return score
+    
+    static func create(in context: NSManagedObjectContext, ecp: ECP, into score: Score) -> ECPScore {
+        let ecpScore = ECPScore(context: context)
+        ecpScore.id = UUID()
+        ecpScore.ecp = ecp
+        ecpScore.timestamp = Date()
+        ecpScore.points = ecp.points
+        ecpScore.verified = false
+        ecpScore.score = score
+        return ecpScore
     }
 }

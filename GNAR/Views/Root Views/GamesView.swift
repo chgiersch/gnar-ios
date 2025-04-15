@@ -11,6 +11,8 @@ import CoreData
 
 struct GamesView: View {
     @ObservedObject var contentViewModel: ContentViewModel
+    @State private var selectedSession: GameSession?
+    @State private var showGameDashboard: Bool = false
 
     var body: some View {
         printRender("🧱 GamesView body rendered at")
@@ -46,17 +48,20 @@ struct GamesView: View {
         }
         .sheet(isPresented: $contentViewModel.showingGameBuilder) {
             GameBuilderView(
-                coreData: contentViewModel.coreData,
-                mountains: contentViewModel.mountainPreviews
-            ) { newSession in
-                contentViewModel.activeSession = newSession
-                Task {
-                    await contentViewModel.loadInitialSessions()
+                viewContext: contentViewModel.coreDataStack.viewContext,
+                onGameCreated: { gameSession in
+                    // Update the selected session and show the dashboard
+                    selectedSession = gameSession
+                    // Refresh the sessions list
+                    Task {
+                        await contentViewModel.loadSessionsIfNeeded()
+                    }
                 }
-            }
+            )
         }
-        .fullScreenCover(item: $contentViewModel.activeSession) { session in
-            GameDashboardView(session: session, contexts: contentViewModel.coreData)
+        .fullScreenCover(item: $selectedSession) { session in
+            let viewModel = GameDashboardViewModel(session: session, viewContext: contentViewModel.coreDataStack.viewContext)
+            GameDashboardView(viewModel: viewModel)
         }
         .overlay {
             if contentViewModel.isLoadingSessions {
@@ -68,34 +73,67 @@ struct GamesView: View {
 
     @ViewBuilder
     private func sessionSection() -> some View {
-        switch contentViewModel.visibleSessions {
-        case nil:
-            loadingState(text: "Loading your games...")
+        VStack(alignment: .leading) {
+            if contentViewModel.isLoadingSessions {
+                loadingSection()
+            } else if let sessions = contentViewModel.visibleSessions, !sessions.isEmpty {
+                sessionsList(sessions)
+            } else {
+                emptyStateView()
+            }
+        }
+    }
 
-        case let sessions? where sessions.isEmpty:
-            Text("No games yet.")
+    private func loadingSection() -> some View {
+        VStack {
+            ProgressView()
+                .padding()
+            Text("Loading games...")
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 24)
+    }
+
+    private func emptyStateView() -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: "gamecontroller")
+                .font(.system(size: 48))
+                .foregroundColor(.gray.opacity(0.5))
+                .padding(.bottom, 8)
+            
+            Text("No games yet")
+                .font(.title2)
                 .foregroundColor(.gray)
+            
+            Text("Start a new game to begin tracking scores")
+                .font(.subheadline)
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 40)
+    }
 
-        case let sessions?:
-            LazyVStack(spacing: 16) {
-                ForEach(sessions) { session in
-                    Button {
-                        contentViewModel.activeSession = nil 
-                        contentViewModel.loadSession(by: session.id)
-                    } label: {
-                        sessionRow(for: session)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(12)
-                    }
-
-                    if sessions.count < (contentViewModel.sessionPreviews?.count ?? 0) {
-                        Button("Load More") {
-                            contentViewModel.loadMoreSessions()
+    private func sessionsList(_ sessions: [GameSessionPreview]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ForEach(sessions) { session in
+                SessionRow(session: session)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        Task {
+                            await contentViewModel.loadSession(id: session.id)
+                            selectedSession = contentViewModel.selectedSession
                         }
-                        .padding(.vertical)
                     }
+            }
+            
+            if (contentViewModel.sessionPreviews?.count ?? 0) > contentViewModel.visibleSessions?.count ?? 0 {
+                Button("Load More") {
+                    contentViewModel.loadMoreSessions()
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
             }
         }
     }
@@ -110,26 +148,48 @@ struct GamesView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 
-    private func sessionRow(for preview: GameSessionPreview) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(preview.mountainName)
-                    .font(.headline)
-                Spacer()
-                Text("\(preview.playerCount) player\(preview.playerCount == 1 ? "" : "s")")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-
-            Text("🕓 \(preview.date.formatted(.dateTime.month().day().hour().minute()))")
-                .font(.caption2)
-                .foregroundColor(.secondary)
-        }
-    }
-
     @discardableResult
     func printRender(_ message: String) -> EmptyView {
         print(message, Date())
         return EmptyView()
     }
+}
+
+struct SessionRow: View {
+    let session: GameSessionPreview
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(session.mountainName)
+                    .font(.headline)
+                
+                Text("\(session.playerCount) players")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                Text("🕓 \(formattedDate)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 8)
+    }
+    
+    private var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: session.startDate)
+    }
+}
+
+// For SwiftUI previews
+#Preview {
+    GamesView(contentViewModel: ContentViewModel(coreDataStack: CoreDataStack.preview))
 }
