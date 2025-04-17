@@ -15,24 +15,11 @@ public class LineScore: NSManagedObject, Identifiable {
     @NSManaged public var id: UUID
     @NSManaged public var lineWorth: LineWorth?
     @NSManaged public var snowLevel: String?
+    @NSManaged public var points: Int32
     @NSManaged public var score: Score?
-
-    public var points: Int {
-        guard let snowLevel = SnowLevel(rawValue: snowLevel ?? ""),
-              let lineWorth = lineWorth else { return 0 }
-
-        switch snowLevel {
-        case .low:
-            return Int(truncating: lineWorth.basePointsLow ?? 0)
-        case .medium:
-            return Int(truncating: lineWorth.basePointsMedium ?? 0)
-        case .high:
-            return Int(truncating: lineWorth.basePointsHigh ?? 0)
-        }
-    }
 }
 
-public enum SnowLevel: String, CaseIterable {
+public enum SnowLevel: String, CaseIterable, Hashable {
     case low, medium, high
     
     var displayColor: Color {
@@ -48,13 +35,27 @@ public enum SnowLevel: String, CaseIterable {
     }
 }
 
-public extension LineScore {
+extension LineScore {
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<LineScore> {
+        return NSFetchRequest<LineScore>(entityName: "LineScore")
+    }
+    
     static func create(in context: NSManagedObjectContext, lineWorth: LineWorth, snowLevel: SnowLevel) -> LineScore {
-        let entity = NSEntityDescription.entity(forEntityName: "LineScore", in: context)!
-        let lineScore = LineScore(entity: entity, insertInto: context)
+        let lineScore = LineScore(context: context)
         lineScore.id = UUID()
         lineScore.lineWorth = lineWorth
         lineScore.snowLevel = snowLevel.rawValue
+        
+        // Calculate and store points based on snow level
+        switch snowLevel {
+        case .low:
+            lineScore.points = lineWorth.basePointsLow?.int32Value ?? 0
+        case .medium:
+            lineScore.points = lineWorth.basePointsMedium?.int32Value ?? 0
+        case .high:
+            lineScore.points = lineWorth.basePointsHigh?.int32Value ?? 0
+        }
+        
         return lineScore
     }
 }

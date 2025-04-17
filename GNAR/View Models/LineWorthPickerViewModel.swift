@@ -5,44 +5,37 @@
 //  Created by Chris Giersch on 4/2/25.
 //
 
+import Foundation
 import SwiftUI
 import CoreData
 
-class LineWorthPickerViewModel: ObservableObject {
-    @Published var allLineWorths: [LineWorth] = []
-    @Published var selectedLineWorth: LineWorth?
-    @Published var selectedSnowLevel: SnowLevel = .medium
-
+@MainActor
+final class LineWorthPickerViewModel: ObservableObject {
     private let context: NSManagedObjectContext
-
-    init(
-        context: NSManagedObjectContext,
-        selectedLineWorth: LineWorth? = nil,
-        selectedSnowLevel: SnowLevel = .medium
-    ) {
+    @Published var lines: [LineWorth] = []
+    
+    init(context: NSManagedObjectContext, selectedLine: LineWorth?, selectedSnowLevel: SnowLevel) {
         self.context = context
-        self.selectedLineWorth = selectedLineWorth
-        self.selectedSnowLevel = selectedSnowLevel
-        fetchLineWorths(context: context)
+        loadLines()
     }
     
-    /// Fetches all LineWorth entities from Core Data
-    private func fetchLineWorths(context: NSManagedObjectContext) {
-        let request: NSFetchRequest<LineWorth> = LineWorth.fetchRequest()
+    private func loadLines() {
+        let request = LineWorth.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \LineWorth.name, ascending: true)]
+        
         do {
-            allLineWorths = try context.fetch(request)
-            print("Loaded \(allLineWorths.count) lines")
+            lines = try context.fetch(request)
         } catch {
-            print("Failed to fetch LineWorths: \(error)")
+            print("Error loading lines: \(error)")
         }
     }
 
     /// Sets the selected line to the one the user tapped
     func select(_ line: LineWorth) {
-        selectedLineWorth = line
+        // Implementation needed
     }
 
     func clearSelection() {
-        selectedLineWorth = nil
+        // Implementation needed
     }
 }

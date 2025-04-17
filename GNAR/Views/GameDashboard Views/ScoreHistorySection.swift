@@ -16,24 +16,28 @@ struct ScoreHistorySection: View {
     var body: some View {
         Section("Score History") {
             ForEach(scores, id: \.self) { score in
-                if let id = score.id {
-                    ScoreHistoryRow(
-                        score: score,
-                        isExpanded: expandedScoreIDs.contains(id),
-                        onTap: {
-                            withAnimation {
-                                toggleExpansion(for: id)
-                            }
-                        },
-                        onDelete: { },
-                        session: viewModel.session
-                    )
-                }
+                ScoreHistoryRow(
+                    score: score,
+                    isExpanded: expandedScoreIDs.contains(score.id),
+                    onTap: {
+                        withAnimation {
+                            toggleExpansion(for: score.id)
+                        }
+                    },
+                    onDelete: {
+                        Task {
+                            await viewModel.deleteScore(score)
+                        }
+                    },
+                    session: viewModel.session
+                )
             }
             .onDelete { indexSet in
-                for index in indexSet {
-                    let score = scores[index]
-                    viewModel.deleteScore(score)
+                Task {
+                    for index in indexSet {
+                        let score = scores[index]
+                        await viewModel.deleteScore(score)
+                    }
                 }
             }
         }

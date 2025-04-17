@@ -63,10 +63,7 @@ struct LoadingScreen: View {
 #Preview {
     LoadingScreen()
         .environmentObject(LaunchStateManager(
-            coreData: CoreDataContexts(
-                viewContext: PersistenceController.preview.container.viewContext,
-                backgroundContext: PersistenceController.preview.container.newBackgroundContext()
-            ),
+            coreDataStack: CoreDataStack.preview,
             appState: AppState()
         ))
 }

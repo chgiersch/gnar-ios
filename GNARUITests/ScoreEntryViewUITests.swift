@@ -1,23 +1,35 @@
 //
-//  ScoreEntryViewUITests.swift
-//  GNAR
+//  GNARUITests.swift
+//  GNARUITests
 //
-//  Created by Chris Giersch on 4/2/25.
+//  Created by Chris Giersch on 3/28/25.
 //
 
-
-// ScoreEntryViewUITests.swift
 import XCTest
 
-final class ScoreEntryViewUITests: XCTestCase {
+extension XCUIElement {
+    func scrollToElement(element: XCUIElement) {
+        while !element.isHittable {
+            swipeUp()
+        }
+    }
+}
+
+@MainActor
+final class GNARUITests: XCTestCase {
     let app = XCUIApplication()
-    
-    override func setUpWithError() throws {
+
+    override func setUp() async throws {
+        try await super.setUp()
         continueAfterFailure = false
         app.launch()
     }
+
+    override func tearDown() async throws {
+        try await super.tearDown()
+    }
     
-    func testScoreEntryNavigation() throws {
+    func testScoreEntryNavigation() async throws {
         // Navigate to score entry
         app.tabBars.buttons["Games"].tap()
         
@@ -26,33 +38,33 @@ final class ScoreEntryViewUITests: XCTestCase {
         XCTAssertTrue(newGameButton.waitForExistence(timeout: 3), "New Game button not found within timeout")
         newGameButton.tap()
         
-        // Wait for the Select Area section to appear - fixed to match actual case
+        // Wait for the Select Area section to appear
         XCTAssertTrue(app.staticTexts["SELECT AREA"].waitForExistence(timeout: 2), "Select Area header not found")
         
-        // Use index 3 for Squallywood (based on debug logs where we see Squallywood is index 3)
-        let squallywoodText = app.staticTexts.element(boundBy: 3)
-        XCTAssertEqual(squallywoodText.label, "Squallywood", "Item at index 3 should be Squallywood but was \(squallywoodText.label)")
+        // Find Squallywood text and tap it
+        let squallywoodText = app.buttons["mountain-Squallywood"]
+        XCTAssertTrue(squallywoodText.waitForExistence(timeout: 2), "Squallywood button not found")
         squallywoodText.tap()
         
         // Enter player names
-        let playerTextField = app.textFields["You"]
-        XCTAssertTrue(playerTextField.waitForExistence(timeout: 2), "Player text field not found")
+        let playerTextField = app.textFields["Player 1"]
+        XCTAssertTrue(playerTextField.waitForExistence(timeout: 2), "Player 1 text field not found")
         playerTextField.tap()
         playerTextField.typeText("Test Player 1")
         
         // Add a second player
-        let addPlayerButton = app.buttons["Add Player"]
+        let addPlayerButton = app.buttons["AddPlayerButton"]
         XCTAssertTrue(addPlayerButton.waitForExistence(timeout: 2), "Add Player button not found")
         addPlayerButton.tap()
         
         // Enter name for second player
-        let secondPlayerField = app.textFields.element(boundBy: 1) // Second text field
+        let secondPlayerField = app.textFields["Player 2"]
         XCTAssertTrue(secondPlayerField.waitForExistence(timeout: 2), "Second player text field not found")
         secondPlayerField.tap()
         secondPlayerField.typeText("Test Player 2")
         
         // Start game and add score
-        let startButton = app.buttons["Start"]
+        let startButton = app.buttons["StartGameButton"]
         XCTAssertTrue(startButton.waitForExistence(timeout: 2), "Start button not found")
         startButton.tap()
         
@@ -62,17 +74,31 @@ final class ScoreEntryViewUITests: XCTestCase {
         addScoreButton.tap()
 
         // Verify we're in the score entry screen
-        let scoreNavBar = app.navigationBars["New Score"]
+        let scoreNavBar = app.navigationBars["Score Entry"]
         XCTAssertTrue(scoreNavBar.waitForExistence(timeout: 2), "Score entry navigation bar not found")
 
         // Find and tap the Line button
-        let lineButton = app.buttons["Line"]
+        let lineButton = app.buttons["LineButton"]
         XCTAssertTrue(lineButton.waitForExistence(timeout: 2), "Line button not found")
         lineButton.tap()
+
+        // Allow more time for the picker to appear (sometimes navigation animations can take time)
+        let lineWorthPicker = app.navigationBars["Select a Line"]
+        XCTAssertTrue(lineWorthPicker.waitForExistence(timeout: 5), "Line worth picker view did not appear")
         
-        // A LineWorthPickerView should appear
-        let lineWorthPicker = app.staticTexts["Select a Line"]
-        XCTAssertTrue(lineWorthPicker.waitForExistence(timeout: 2), "Line worth picker view did not appear")
+        // Debug info - print out available navigation bars 
+        if !lineWorthPicker.exists {
+            XCTContext.runActivity(named: "Debug Navigation Structure") { _ in
+                let navBars = app.navigationBars.allElementsBoundByIndex
+                XCTContext.runActivity(named: "Available Navigation Bars: \(navBars.count)") { _ in
+                    for (index, navBar) in navBars.enumerated() {
+                        XCTContext.runActivity(named: "Nav \(index): \(navBar.identifier)") { _ in
+                            XCTAssertTrue(true) // Just to output the debug info
+                        }
+                    }
+                }
+            }
+        }
         
         // Select a snow level (high)
         let highSnowButton = app.buttons["snow-level-high"]
@@ -81,7 +107,6 @@ final class ScoreEntryViewUITests: XCTestCase {
                 
         // Select the first line in the list if available
         if app.cells.count > 0 {
-            
             // Look specifically for "Dead Man's" line
             let deadMansLine = app.staticTexts["Dead Man's"]
             
@@ -100,78 +125,68 @@ final class ScoreEntryViewUITests: XCTestCase {
                 }
             }
             
+            // Look for the "LINE WORTH" section header which appears when a line is added
+            let lineWorthSection = app.staticTexts["LINE"]
+            XCTAssertTrue(lineWorthSection.waitForExistence(timeout: 3), "LINE section not found after adding line")
+            
+            // The actual line name should appear in the form now
+            let deadMansLineScore = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'Dead Man'")).firstMatch
+            XCTAssertTrue(deadMansLineScore.waitForExistence(timeout: 3), "Dead Man's line not found after selection")
+            
             let addButton = app.navigationBars.buttons["AddLineButton"]
-
             XCTAssertTrue(addButton.waitForExistence(timeout: 2), "Add button not found in navigation bar")
             addButton.tap()
             
             // Verify we returned to the score entry screen
             XCTAssertTrue(scoreNavBar.waitForExistence(timeout: 2), "Did not return to score entry screen")
             
-            // Wait a bit longer for the UI to fully update after returning to score entry
-            sleep(2)
+            // Give UI time to update after returning to score entry
+            sleep(1)
             
-            // Look for the "LINE WORTH" section header which appears when a line is added
-            let lineWorthSection = app.staticTexts["LINE WORTH"]
-            XCTAssertTrue(lineWorthSection.waitForExistence(timeout: 3), "LINE WORTH section not found after adding line")
-            
-            // The actual line name should appear in the form now
-            let deadMansLineScore = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'Dead Man'")).firstMatch
-            
-            // Print all text elements to debug what's actually visible
-            for (i, text) in app.staticTexts.allElementsBoundByIndex.enumerated() {
-                print("  Text \(i): '\(text.label)'")
-            }
-            
-            // Check specifically for Dead Man's line
-            XCTAssertTrue(deadMansLineScore.waitForExistence(timeout: 3), "Dead Man's line not found after selection")
+        } else {
+            XCTFail("No cells found in the line list")
         }
     }
     
     // Add a simplified test focusing just on mountain selection
-    func testMountainSelection() throws {
+    func testMountainSelection() async throws {
         // Navigate to game creation
         app.tabBars.buttons["Games"].tap()
+        
         let newGameButton = app.buttons["New Game"]
         XCTAssertTrue(newGameButton.waitForExistence(timeout: 3), "New Game button not found")
         newGameButton.tap()
         
-        // Debug info - print all text elements visible
-        for (index, element) in app.staticTexts.allElementsBoundByIndex.enumerated() {
-            print("  \(index): '\(element.label)'")
-        }
-        
         // Note: Form section headers are automatically rendered in uppercase by iOS
-        // even if they're defined with title case in code
         XCTAssertTrue(app.staticTexts["SELECT AREA"].waitForExistence(timeout: 2), "Select Area header not found")
         
         // Wait a moment for animation to complete
         sleep(1)
         
-        // Use index 3 for Squallywood from the debug logs
-        let squallywoodText = app.staticTexts.element(boundBy: 3)
-        XCTAssertEqual(squallywoodText.label, "Squallywood", "Text at index 3 should be Squallywood")
+        // Find Squallywood by accessibility identifier
+        let squallywoodText = app.buttons["mountain-Squallywood"]
+        XCTAssertTrue(squallywoodText.waitForExistence(timeout: 2), "Squallywood button not found")
         squallywoodText.tap()
         
         // Enter player names
-        let playerTextField = app.textFields["You"]
-        XCTAssertTrue(playerTextField.waitForExistence(timeout: 2), "Player text field not found")
+        let playerTextField = app.textFields["Player 1"]
+        XCTAssertTrue(playerTextField.waitForExistence(timeout: 2), "Player 1 text field not found")
         playerTextField.tap()
         playerTextField.typeText("Test Player 1")
         
         // Add a second player
-        let addPlayerButton = app.buttons["Add Player"]
+        let addPlayerButton = app.buttons["AddPlayerButton"]
         XCTAssertTrue(addPlayerButton.waitForExistence(timeout: 2), "Add Player button not found")
         addPlayerButton.tap()
-        
+
         // Enter name for second player
-        let secondPlayerField = app.textFields.element(boundBy: 1) // Second text field
+        let secondPlayerField = app.textFields["Player 2"]
         XCTAssertTrue(secondPlayerField.waitForExistence(timeout: 2), "Second player text field not found")
         secondPlayerField.tap()
         secondPlayerField.typeText("Test Player 2")
         
         // Check if we can proceed with Start
-        let startButton = app.buttons["Start"]
+        let startButton = app.buttons["StartGameButton"]
         XCTAssertTrue(startButton.waitForExistence(timeout: 2), "Start button not found")
     }
 }

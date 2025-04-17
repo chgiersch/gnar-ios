@@ -25,12 +25,12 @@ public class TrickBonus: NSManagedObject, Identifiable, Decodable {
     }
 
     required convenience public init(from decoder: Decoder) throws {
-        guard let context = decoder.userInfo[CodingUserInfoKey.context!] as? NSManagedObjectContext else {
+        guard let managedObjectContext = decoder.userInfo[CodingUserInfoKey.context!] as? NSManagedObjectContext else {
             fatalError("❌ Failed to decode TrickBonus due to missing Core Data context")
         }
 
-        let entity = NSEntityDescription.entity(forEntityName: "TrickBonus", in: context)!
-        self.init(entity: entity, insertInto: context)
+        let entity = NSEntityDescription.entity(forEntityName: "TrickBonus", in: managedObjectContext)!
+        self.init(entity: entity, insertInto: managedObjectContext)
 
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = UUID()

@@ -13,22 +13,15 @@ struct GNARApp: App {
     @StateObject private var appState = AppState()
     @StateObject private var launchManager: LaunchStateManager
     @State private var contentViewModel: ContentViewModel?
-    private let persistenceController = PersistenceController.shared
+    private let coreDataStack = CoreDataStack.shared
 
-    var coreData: CoreDataContexts {
-        CoreDataContexts(
-            viewContext: persistenceController.container.viewContext,
-            backgroundContext: persistenceController.container.newBackgroundContext()
-        )
-    }
-    
     init() {
         let appState = AppState()
         _appState = StateObject(wrappedValue: appState)
-        _launchManager = StateObject(wrappedValue: LaunchStateManager(coreData: CoreDataContexts(
-            viewContext: PersistenceController.shared.container.viewContext,
-            backgroundContext: PersistenceController.shared.container.newBackgroundContext()
-        ), appState: appState))
+        _launchManager = StateObject(wrappedValue: LaunchStateManager(
+            coreDataStack: CoreDataStack.shared,
+            appState: appState
+        ))
     }
 
     var body: some Scene {
@@ -37,50 +30,51 @@ struct GNARApp: App {
                 appState: appState,
                 contentViewModel: contentViewModel
             )
-            .environment(\.managedObjectContext, coreData.viewContext)
+            .environment(\.managedObjectContext, coreDataStack.viewContext)
             .environmentObject(appState)
             .environmentObject(launchManager)
             .task {
                 await launchManager.beginLaunchSequence()
                 await MainActor.run {
-                    contentViewModel = ContentViewModel(coreData: coreData)
+                    contentViewModel = ContentViewModel(coreDataStack: coreDataStack)
                 }
             }
         }
     }
     
-//#if DEBUG
-//                await resetDebugStateIfNeeded()
-//#endif
-    
-    // MARK: - Debug Reset
+    // Development/Debug functions
+    #if DEBUG
     func resetDebugStateIfNeeded() async {
-        await MainActor.run {
-            SeedVersionManager.shared.resetAllVersions()
+        if CommandLine.arguments.contains("--reset-data") {
+            await deleteAllData()
+            UserDefaults.standard.hasSeededMountains = false
         }
-        await deleteAllMountains()
-        await deleteAllGameSessions()
     }
-
+    
+    func deleteAllData() async {
+        await deleteAllGameSessions()
+        await deleteAllMountains()
+    }
+    
     func deleteAllMountains() async {
-        let context = persistenceController.container.viewContext
+        let context = coreDataStack.viewContext
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = Mountain.fetchRequest()
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
+        
         do {
             try context.execute(deleteRequest)
             try context.save()
-            print("🗑 All mountains deleted")
+            print("✅ All mountains deleted")
         } catch {
             print("❌ Failed to delete mountains: \(error)")
         }
     }
     
     func deleteAllGameSessions() async {
-        let context = persistenceController.container.viewContext
+        let context = coreDataStack.viewContext
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = GameSession.fetchRequest()
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
+        
         do {
             try context.execute(deleteRequest)
             try context.save()
@@ -89,6 +83,7 @@ struct GNARApp: App {
             print("❌ Failed to delete game sessions: \(error)")
         }
     }
+    #endif
 }
 
 // Separate class to handle app-wide state

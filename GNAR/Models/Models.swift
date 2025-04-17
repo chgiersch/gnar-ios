@@ -7,31 +7,26 @@
 
 import Foundation
 
-struct ScoreSummary: Identifiable {
-    let id: UUID
-    let lineName: String?
-    let snowLevel: SnowLevel?
-    let points: Int
-}
-
 struct GameSessionPreview: Identifiable, Equatable {
     let id: UUID
     let mountainName: String
-    let date: Date
+    let startDate: Date
     let playerCount: Int
-
-    init?(from session: GameSession) {
-        guard
-            let id = session.id,
-            let date = session.startDate,
-            !session.mountainName.isEmpty
-        else {
-            return nil
-        }
-
+    
+    init(id: UUID = UUID(), 
+         mountainName: String = "Unknown Mountain", 
+         playerCount: Int = 0, 
+         startDate: Date = Date()) {
         self.id = id
-        self.mountainName = session.mountainName
-        self.date = date
+        self.mountainName = mountainName
+        self.startDate = startDate
+        self.playerCount = playerCount
+    }
+    
+    init(from session: GameSession) {
+        self.id = session.id
+        self.mountainName = session.mountainName.isEmpty ? "Unknown Mountain" : session.mountainName
+        self.startDate = session.startDate ?? Date()
         self.playerCount = (session.players as? Set<Player>)?.count ?? 0
     }
 }
@@ -40,11 +35,4 @@ struct MountainPreview: Identifiable, Equatable {
     let id: String
     let name: String
     let isGlobal: Bool
-}
-
-struct LeaderboardSummary: Identifiable {
-    let id: UUID
-    let player: Player
-    let proScore: Int
-    let gnarScore: Int
 }

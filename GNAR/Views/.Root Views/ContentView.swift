@@ -35,18 +35,16 @@ struct ContentView: View {
             }
             .onAppear {
                 print("📱 ContentView appeared at", Date())
-                Task {
-                    await MainActor.run {
-                        self.viewModel.sessionPreviews = []
-                        self.viewModel.visibleSessions = []
-                        self.viewModel.isLoadingSessions = true
-                    }                    
+                Task { @MainActor in
+                    viewModel.sessionPreviews = []
+                    viewModel.visibleSessions = []
+                    viewModel.isLoadingSessions = true
+                    await viewModel.loadSessionsIfNeeded()
                 }
-                Task { await viewModel.loadSessionsIfNeeded() }
             }
             .onChange(of: viewModel.selectedTab) { oldTab, newTab in
                 if newTab == .games {
-                    Task {
+                    Task { @MainActor in
                         await viewModel.loadSessionsIfNeeded()
                     }
                 }

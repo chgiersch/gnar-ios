@@ -11,19 +11,18 @@ import CoreData
 
 final class SquallywoodLoadTests: XCTestCase {
     
-    var persistenceController: PersistenceController!
+    var coreDataStack: CoreDataStack!
     var context: NSManagedObjectContext!
     
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-        persistenceController = PersistenceController(inMemory: true)
-        context = persistenceController.container.viewContext
+    override func setUp() {
+        super.setUp()
+        coreDataStack = CoreDataStack(inMemory: true)
+        context = coreDataStack.viewContext
     }
     
-    override func tearDownWithError() throws {
-        persistenceController = nil
-        context = nil
-        try super.tearDownWithError()
+    override func tearDown() {
+        coreDataStack = nil
+        super.tearDown()
     }
 
     func testLoadSquallywoodMountainJSON() throws {

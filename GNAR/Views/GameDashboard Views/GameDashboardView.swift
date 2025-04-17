@@ -9,60 +9,66 @@
 import SwiftUI
 
 struct GameDashboardView: View {
-    @Environment(\.dismiss) var dismiss
-    @StateObject private var viewModel: GameDashboardViewModel
+    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject var viewModel: GameDashboardViewModel
     @State private var expandedScoreIDs: Set<UUID> = []
+    @State private var showingScoreEntry = false
     
-    init(session: GameSession, contexts: CoreDataContexts) {
-        let repository = ScoreRepository(contexts: contexts)
-        _viewModel = StateObject(wrappedValue: GameDashboardViewModel(session: session, repository: repository))
+    init(viewModel: GameDashboardViewModel) {
+        self.viewModel = viewModel
     }
-
+    
     var body: some View {
         NavigationStack {
             List {
+                // Leaderboard Section
                 LeaderboardSection(
                     summaries: viewModel.leaderboardSummaries,
                     selectedPlayer: $viewModel.selectedPlayer
                 )
-
+                
+                // Score History Section
                 ScoreHistorySection(
                     viewModel: viewModel,
                     scores: viewModel.filteredScores,
                     expandedScoreIDs: $expandedScoreIDs
                 )
             }
-            .navigationTitle("Game: \(viewModel.session.mountainName)")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(viewModel.session.mountainName)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Exit") { dismiss() }
+                    Button("End Game") {
+                        dismiss()
+                    }
+                    .accessibilityIdentifier("EndGameButton")
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                
+                ToolbarItem(placement: .primaryAction) {
                     Button {
-                        viewModel.showingScoreEntry = true
+                        showingScoreEntry = true
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .disabled(viewModel.selectedPlayer == nil)
                     .accessibilityIdentifier("AddScoreButton")
                 }
             }
-            .sheet(isPresented: $viewModel.showingScoreEntry) {
-                if let player = viewModel.selectedPlayer {
+            .sheet(isPresented: $showingScoreEntry) {
+                if let selectedPlayer = viewModel.selectedPlayer {
                     ScoreEntryView(
-                        selectedPlayerID: .constant(player.objectID),
-                        allPlayers: viewModel.sortedPlayers,
-                        session: viewModel.session,
-                        context: viewModel.scoreRepositoryViewContext,
-                        isFreeRange: viewModel.session.mountainName == "Free Range",
-                        editingScore: nil
-                    ) { newScore in
-                        viewModel.addScore(newScore)
-                    }
+                        viewContext: viewContext,
+                        selectedPlayer: selectedPlayer,
+                        gameSession: viewModel.session,
+                        onDismiss: {
+                            showingScoreEntry = false
+                            Task {
+                                await viewModel.loadScores()
+                                await viewModel.loadLeaderboard()
+                            }
+                        }
+                    )
                 }
-            }
-            .task {
-                await viewModel.loadScores()
             }
         }
     }

@@ -29,12 +29,12 @@ public class Mountain: NSManagedObject, Identifiable, Decodable {
     }
     
     required convenience public init(from decoder: Decoder) throws {
-        guard let context = decoder.userInfo[CodingUserInfoKey.context!] as? NSManagedObjectContext else {
+        guard let managedObjectContext = decoder.userInfo[CodingUserInfoKey.context!] as? NSManagedObjectContext else {
             fatalError("Failed to decode Mountain due to missing context.")
         }
 
-        let entity = NSEntityDescription.entity(forEntityName: "Mountain", in: context)!
-        self.init(entity: entity, insertInto: context)
+        let entity = NSEntityDescription.entity(forEntityName: "Mountain", in: managedObjectContext)!
+        self.init(entity: entity, insertInto: managedObjectContext)
 
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(String.self, forKey: .id)

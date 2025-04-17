@@ -10,72 +10,71 @@ import Foundation
 import SwiftUI
 import CoreData
 
+@MainActor
 class GameBuilderViewModel: ObservableObject {
-    @Published var mountains: [MountainPreview] = []
-    @Published var selectedMountain: MountainPreview?
+    // MARK: - Properties
+    
     @Published var playerNames: [String] = [""]
-    @Published var createdGameSession: GameSession?
-
-    private let coreData: CoreDataContexts
-
-    init(coreData: CoreDataContexts, mountains: [MountainPreview]) {
-        self.coreData = coreData
-        self.mountains = mountains
-        self.selectedMountain = mountains.first // assumes global is first
+    @Published var selectedMountain: String = "Free Range"
+    @Published var error: Error?
+    @Published var isLoading = false
+    
+    private let viewContext: NSManagedObjectContext
+    
+    // MARK: - Computed Properties
+    
+    var canStartGame: Bool {
+        !selectedMountain.isEmpty && 
+        playerNames.count >= 1 && 
+        playerNames.allSatisfy { !$0.isEmpty }
     }
     
-    func addPlayer() {
+    // MARK: - Initialization
+    
+    init(viewContext: NSManagedObjectContext) {
+        self.viewContext = viewContext
+    }
+    
+    // MARK: - Methods
+    
+    func addPlayerField() {
         playerNames.append("")
     }
     
-    func removePlayer(at index: Int) {
-        guard playerNames.indices.contains(index) else { return }
-        playerNames.remove(at: index)
-    }
-
-    func createGameSession() -> GameSession? {
+    func startGame() async throws -> GameSession {
+        print("🎮 Starting game creation...")
         
-        guard let selectedMountain = selectedMountain, !playerNames.isEmpty else {
-            return nil
-        }
-        print("🎯 Attempting to create session for mountain: \(selectedMountain.name)")
-        print("👥 Player names: \(playerNames)")
-
-        let gameSession = GameSession(context: coreData.viewContext)
-        gameSession.mountainName = selectedMountain.name
+        // Create the game session
+        let gameSession = GameSession(context: viewContext)
         gameSession.id = UUID()
+        gameSession.mountainName = selectedMountain
         gameSession.startDate = Date()
-
-        let players = playerNames.map { name -> Player in
-            let player = Player(context: coreData.viewContext)
+        
+        print("🎮 Created game session with ID: \(gameSession.id.uuidString)")
+        print("🎮 Mountain: \(gameSession.mountainName)")
+        
+        // Create and add players
+        for name in playerNames {
+            print("🎮 Creating player: \(name)")
+            let player = Player(context: viewContext)
             player.id = UUID()
             player.name = name
-            return player
+            gameSession.addToPlayers(player)
+            player.addToGameSessions(gameSession)
         }
-
-        gameSession.players = NSSet(array: players)
-
+        
+        print("🎮 Total players added: \(gameSession.playersArray.count)")
+        
+        print("🎮 Attempting to save context...")
         do {
-            try coreData.viewContext.save()
-            self.createdGameSession = gameSession
+            try viewContext.save()
+            print("🎮 Context saved successfully")
             return gameSession
         } catch {
-            coreData.viewContext.rollback()
-            print("❌ Failed to save game session: \(error)")
-            return nil
+            print("🎮 Error saving context: \(error)")
+            // Rollback changes if save fails
+            viewContext.rollback()
+            throw error
         }
-    }
-
-    func bindingForPlayer(at index: Int) -> Binding<String> {
-        Binding(
-            get: {
-                guard self.playerNames.indices.contains(index) else { return "" }
-                return self.playerNames[index]
-            },
-            set: { newValue in
-                guard self.playerNames.indices.contains(index) else { return }
-                self.playerNames[index] = newValue
-            }
-        )
     }
 }
