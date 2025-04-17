@@ -12,6 +12,16 @@ struct ContentView: View {
     @EnvironmentObject var appState: AppState
     @ObservedObject var viewModel: ContentViewModel
     
+    init(viewModel: ContentViewModel) {
+        self.viewModel = viewModel
+        
+        let tabBarAppearance = UITabBarAppearance()
+        tabBarAppearance.configureWithOpaqueBackground()
+        tabBarAppearance.backgroundColor = UIColor.systemBackground
+        UITabBar.appearance().standardAppearance = tabBarAppearance
+        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+    }
+    
     var body: some View {
         NavigationStack {
             TabView(selection: $viewModel.selectedTab) {
