@@ -1,0 +1,16 @@
+opt_in_rules:
+  - force_unwrapping
+  - implicit_return
+  - trailing_closure
+
+disabled_rules:
+  - line_length
+  - identifier_name
+
+included:
+  - GNAR
+
+excluded:
+  - Pods
+
+reporter: xcode 
