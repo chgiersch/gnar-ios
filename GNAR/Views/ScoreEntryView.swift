@@ -206,6 +206,7 @@ struct ScoreEntryView: View {
                             }
                         }
                         .buttonStyle(.bordered)
+                        .accessibilityIdentifier("LineButton")
                     }
                     
                     Button(action: { showTricksView = true }) {
@@ -216,6 +217,7 @@ struct ScoreEntryView: View {
                         }
                     }
                     .buttonStyle(.bordered)
+                    .accessibilityIdentifier("TrickButton")
                     
                     Button(action: { showECPsView = true }) {
                         VStack {
@@ -225,6 +227,7 @@ struct ScoreEntryView: View {
                         }
                     }
                     .buttonStyle(.bordered)
+                    .accessibilityIdentifier("ECPButton")
                     
                     Button(action: { showPenaltiesView = true }) {
                         VStack {
@@ -234,6 +237,7 @@ struct ScoreEntryView: View {
                         }
                     }
                     .buttonStyle(.bordered)
+                    .accessibilityIdentifier("PenaltyButton")
                 }
                 .padding()
             }
@@ -244,6 +248,7 @@ struct ScoreEntryView: View {
                     Button("Cancel") {
                         onDismiss()
                     }
+                    .accessibilityIdentifier("CancelScoreButton")
                 }
                 
                 ToolbarItem(placement: .confirmationAction) {

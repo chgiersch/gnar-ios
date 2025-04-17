@@ -41,6 +41,7 @@ struct GameDashboardView: View {
                     Button("End Game") {
                         dismiss()
                     }
+                    .accessibilityIdentifier("EndGameButton")
                 }
                 
                 ToolbarItem(placement: .primaryAction) {
@@ -50,6 +51,7 @@ struct GameDashboardView: View {
                         Image(systemName: "plus")
                     }
                     .disabled(viewModel.selectedPlayer == nil)
+                    .accessibilityIdentifier("AddScoreButton")
                 }
             }
             .sheet(isPresented: $showingScoreEntry) {

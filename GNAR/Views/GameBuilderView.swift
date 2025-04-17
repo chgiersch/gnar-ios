@@ -40,6 +40,7 @@ struct GameBuilderView: View {
                                 }
                             }
                         }
+                        .accessibilityIdentifier("mountain-\(mountain)")
                     }
                 }
                 
@@ -59,6 +60,7 @@ struct GameBuilderView: View {
                     }
                     .buttonStyle(.bordered)
                     .disabled(viewModel.playerNames.count >= 10)
+                    .accessibilityIdentifier("AddPlayerButton")
                 }
                 
                 // Start Game Section
@@ -80,6 +82,7 @@ struct GameBuilderView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .disabled(!viewModel.canStartGame)
+                    .accessibilityIdentifier("StartGameButton")
                 }
             }
             .navigationTitle("New Game")
