@@ -86,14 +86,14 @@ class GameDashboardViewModel: ObservableObject {
         var summaries: [LeaderboardSummary] = []
         
         // Sort players by their scores in this game session
-        let sortedPlayers = players.sorted { player1, player2 in
+        let sortedPlayers = players.sorted { (player1: Player, player2: Player) in
             let player1Scores = session.scoresArray.filter { $0.player?.id == player1.id }
             let player2Scores = session.scoresArray.filter { $0.player?.id == player2.id }
             
-            let player1Total = player1Scores.reduce(0) { $0 + $1.proScore }
-            let player2Total = player2Scores.reduce(0) { $0 + $1.proScore }
+            let player1Total = player1Scores.reduce(0) { $0 + $1.gnarScore }
+            let player2Total = player2Scores.reduce(0) { $0 + $1.gnarScore }
             
-            // First sort by proScore
+            // First sort by gnarScore
             if player1Total != player2Total {
                 return player1Total > player2Total
             }

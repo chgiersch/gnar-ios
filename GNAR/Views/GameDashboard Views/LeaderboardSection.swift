@@ -31,7 +31,7 @@ struct LeaderboardSection: View {
                                 .fontWeight(.medium)
                             
                             HStack(spacing: 12) {
-                                Label("\(summary.proScore) pts", systemImage: "star.fill")
+                                Label("\(summary.gnarScore) pts", systemImage: "star.fill")
                                     .foregroundColor(.orange)
                             }
                             .font(.caption)

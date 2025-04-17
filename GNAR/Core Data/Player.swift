@@ -40,18 +40,16 @@ extension Player {
     }
     
     var allTimeGnarScore: Int32 {
-        gameSessionsArray.reduce(0) { total, session in
-            total + session.scoresArray
-                .filter { $0.player?.id == self.id }
-                .reduce(0) { $0 + $1.gnarScore }
-        }
+        guard let scores = scores as? Set<Score> else { return 0 }
+        return scores
+            .reduce(0) { $0 + $1.gnarScore }
     }
     
-    var allTimeProScore: Int32 {
+    var allTimeHeroScore: Int32 {
         gameSessionsArray.reduce(0) { total, session in
             total + session.scoresArray
                 .filter { $0.player?.id == self.id }
-                .reduce(0) { $0 + $1.proScore }
+                .reduce(0) { $0 + $1.heroScore }
         }
     }
     

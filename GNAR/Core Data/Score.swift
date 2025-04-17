@@ -13,8 +13,8 @@ import CoreData
 public class Score: NSManagedObject, Identifiable {
     @NSManaged public var id: UUID
     @NSManaged public var timestamp: Date?
-    @NSManaged public var proScore: Int32
     @NSManaged public var gnarScore: Int32
+    @NSManaged public var heroScore: Int32
     
     @NSManaged public var lineScore: LineScore?
     @NSManaged public var trickBonusScores: NSSet?
@@ -89,8 +89,8 @@ extension Score {
         
         // Calculate and store final scores
         let linePoints = lineScore.points
-        score.proScore = linePoints + totalTrickPoints + totalECPPoints - totalPenaltyPoints
-        score.gnarScore = abs(linePoints) + abs(totalTrickPoints) + abs(totalECPPoints) + abs(totalPenaltyPoints)
+        score.gnarScore = linePoints + totalTrickPoints + totalECPPoints - totalPenaltyPoints
+        score.heroScore = abs(linePoints) + abs(totalTrickPoints) + abs(totalECPPoints) + abs(totalPenaltyPoints)
         
         return score
     }

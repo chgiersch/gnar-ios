@@ -140,7 +140,7 @@ class ScoreEntryViewModel: ObservableObject {
         }
         
         // Calculate and store final scores
-        score.proScore = linePoints + totalTrickPoints + totalECPPoints - totalPenaltyPoints
+        score.heroScore = linePoints + totalTrickPoints + totalECPPoints - totalPenaltyPoints
         score.gnarScore = abs(linePoints) + abs(totalTrickPoints) + abs(totalECPPoints) + abs(totalPenaltyPoints)
         
         try viewContext.save()

@@ -52,7 +52,7 @@ struct ScoreHistoryRow: View {
                 Spacer()
 
                 if !isExpanded {
-                    Text("\(score.proScore) pts")
+                    Text("\(score.gnarScore) pts")
                         .font(.subheadline)
                         .bold()
                         .padding(.leading, 8)
@@ -97,7 +97,7 @@ struct ScoreHistoryRow: View {
                     )
                     HStack {
                         Spacer()
-                        Text("Total: \(score.proScore) pts")
+                        Text("Total: \(score.gnarScore) pts")
                             .font(.subheadline)
                             .bold()
                     }

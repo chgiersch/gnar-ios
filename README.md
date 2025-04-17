@@ -1,7 +1,7 @@
 # GNAR – iOS App (Work in Progress)
 
 **DISCLAIMER**  
-This app is a **personal, non-commercial project** inspired by the original GNAR game, created by Shane McConkey and popularized by Unofficial Networks and the film *GNAR: The Movie*.  
+This app is a **personal, non-commercial project** inspired by the original GNAR game, created by Shane McConkey & Robb Gaffney and popularized by Unofficial Networks and the film *GNAR: The Movie*.  
 I do **not claim ownership** over the GNAR game concept or any original material associated with it. This is built **for educational purposes only** — to explore app development patterns, SwiftUI architecture, and playful design.
 
 If you're affiliated with the original creators and have concerns, feel free to contact me. I'll respectfully respond and take appropriate action. In fact, I've already been in touch multiple times and look forward to connecting more! 

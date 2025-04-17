@@ -6,8 +6,8 @@ struct LeaderboardSummary: Identifiable {
     var id: UUID
     var player: Player?
     var playerName: String
+    var heroScore: Int
     var gnarScore: Int
-    var proScore: Int
     var rank: Int
     
     init(player: Player, gameSession: GameSession, rank: Int = 0) {
@@ -17,8 +17,8 @@ struct LeaderboardSummary: Identifiable {
         
         // Calculate scores for this specific game session
         let gameScores = gameSession.scoresArray.filter { $0.player?.id == player.id }
+        self.heroScore = Int(gameScores.reduce(0) { $0 + $1.heroScore })
         self.gnarScore = Int(gameScores.reduce(0) { $0 + $1.gnarScore })
-        self.proScore = Int(gameScores.reduce(0) { $0 + $1.proScore })
         self.rank = rank
     }
 } 
