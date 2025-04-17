@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "GNAR-title-icon-ios-1024.png",
+      "filename" : "GNAR-title-gradient-icon-ios-1024.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "GNAR-title-icon-ios-1024 1.png",
+      "filename" : "GNAR-title-gradient-icon-ios-1024 1.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,7 +25,7 @@
           "value" : "tinted"
         }
       ],
-      "filename" : "GNAR-title-icon-ios-1024 2.png",
+      "filename" : "GNAR-title-gradient-icon-ios-1024 2.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
