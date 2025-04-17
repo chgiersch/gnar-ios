@@ -67,10 +67,12 @@ class ScoreEntryViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(selectedPlayer: Player, gameSession: GameSession, viewContext: NSManagedObjectContext) {
+    init(viewContext: NSManagedObjectContext,
+         selectedPlayer: Player,
+         gameSession: GameSession) {
+        self.viewContext = viewContext
         self.selectedPlayer = selectedPlayer
         self.gameSession = gameSession
-        self.viewContext = viewContext
     }
     
     // MARK: - Score Management

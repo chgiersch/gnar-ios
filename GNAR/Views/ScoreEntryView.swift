@@ -39,14 +39,16 @@ struct ScoreEntryView: View {
     
     // MARK: - Initialization
     
-    init(selectedPlayer: Player, gameSession: GameSession, onDismiss: @escaping () -> Void) {
+    init(viewContext: NSManagedObjectContext,
+         selectedPlayer: Player,
+         gameSession: GameSession, onDismiss: @escaping () -> Void) {
         self.selectedPlayer = selectedPlayer
         self.gameSession = gameSession
         self.onDismiss = onDismiss
         _viewModel = StateObject(wrappedValue: ScoreEntryViewModel(
+            viewContext: viewContext,
             selectedPlayer: selectedPlayer,
-            gameSession: gameSession,
-            viewContext: CoreDataStack.shared.viewContext
+            gameSession: gameSession
         ))
     }
     

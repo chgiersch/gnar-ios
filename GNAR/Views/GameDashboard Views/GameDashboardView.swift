@@ -55,6 +55,7 @@ struct GameDashboardView: View {
             .sheet(isPresented: $showingScoreEntry) {
                 if let selectedPlayer = viewModel.selectedPlayer {
                     ScoreEntryView(
+                        viewContext: viewContext,
                         selectedPlayer: selectedPlayer,
                         gameSession: viewModel.session,
                         onDismiss: {
