@@ -14,46 +14,54 @@ struct LoadingScreen: View {
     let timer = Timer.publish(every: 0.016, on: .main, in: .common).autoconnect() // ~60 FPS
 
     var body: some View {
-        ZStack {
-            Color(.systemBackground)
-                .ignoresSafeArea()
-
-            VStack(spacing: 36) {
-                Text("GNAR")
-                    .font(.system(size: 64, weight: .black, design: .rounded))
-                    .tracking(4)
-                    .foregroundColor(.accentColor)
-                    .shadow(color: .accentColor.opacity(0.4), radius: 8, x: 0, y: 4)
-
-                HStack(spacing: 40) {
-                    Image(systemName: "figure.skiing.downhill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 48, height: 48)
-                        .rotationEffect(.degrees(skiAngle))
-
-                    Image(systemName: "figure.snowboarding")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 48, height: 48)
-                        .rotationEffect(.degrees(boardAngle))
-                }
+        GeometryReader { geometry in
+            ZStack {
+                Image("GNAR_Cover")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .clipped()
+                    .overlay(Color.black.opacity(0.4))
                 
-                VStack(spacing: 8) {
-                    ProgressView(value: launchManager.loadingProgress, total: 1.0)
-                        .frame(width: 200)
-                        .progressViewStyle(LinearProgressViewStyle())
-                        .tint(.accentColor)
+                VStack(spacing: 36) {
+                    Text("GNAR")
+                        .font(.system(size: 64, weight: .black, design: .rounded))
+                        .tracking(4)
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.6), radius: 8, x: 0, y: 4)
                     
-                    Text(launchManager.loadingMessage)
-                        .font(.headline)
-                        .foregroundColor(.secondary)
+                    HStack(spacing: 40) {
+                        Image(systemName: "figure.skiing.downhill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 48, height: 48)
+                            .foregroundColor(.white)
+                            .rotationEffect(.degrees(skiAngle))
+                        
+                        Image(systemName: "figure.snowboarding")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 48, height: 48)
+                            .foregroundColor(.white)
+                            .rotationEffect(.degrees(boardAngle))
+                    }
+                    
+                    VStack(spacing: 8) {
+                        ProgressView(value: launchManager.loadingProgress, total: 1.0)
+                            .frame(width: 200)
+                            .progressViewStyle(LinearProgressViewStyle())
+                            .tint(.white)
+                        
+                        Text(launchManager.loadingMessage)
+                            .font(.headline)
+                            .foregroundColor(.white)
+                    }
+                    .padding(.top, 8)
                 }
-                .padding(.top, 8)
-            }
-            .onReceive(timer) { _ in
-                skiAngle += 2
-                boardAngle -= 2
+                .onReceive(timer) { _ in
+                    skiAngle += 2
+                    boardAngle -= 2
+                }
             }
         }
     }
