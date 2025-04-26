@@ -17,7 +17,9 @@ struct LeaderboardSection: View {
             ForEach(summaries) { summary in
                 let player = summary.player
                 Button {
+                    print("Selected player: \(player.name)")
                     selectedPlayer = player
+                    print("After selection, selectedPlayer: \(selectedPlayer?.name ?? "nil")")
                 } label: {
                     HStack {
                         Text("\(summary.rank)")
@@ -44,7 +46,7 @@ struct LeaderboardSection: View {
                     .padding(.horizontal)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(selectedPlayer?.id == player?.id ? Color.accentColor.opacity(0.15) : Color.clear)
+                            .fill(selectedPlayer?.id == player.id ? Color.accentColor.opacity(0.15) : Color.clear)
                     )
                 }
                 .buttonStyle(.plain)

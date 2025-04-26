@@ -16,89 +16,121 @@ struct GameBuilderView: View {
     @FocusState private var focusedField: Int?
     var onGameCreated: ((GameSession) -> Void)?
     
-    init(viewContext: NSManagedObjectContext, onGameCreated: ((GameSession) -> Void)? = nil) {
-        _viewModel = StateObject(wrappedValue: GameBuilderViewModel(viewContext: viewContext))
+    init(viewContext: NSManagedObjectContext, gameState: GameState, onGameCreated: ((GameSession) -> Void)? = nil) {
+        _viewModel = StateObject(wrappedValue: GameBuilderViewModel(viewContext: viewContext, gameState: gameState))
         self.onGameCreated = onGameCreated
     }
     
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            // Header Toolbar
+            HStack {
+                Button("Cancel") {
+                    dismiss()
+                }
+                .accessibilityIdentifier("CancelButton")
+                
+                Spacer()
+                
+                Text("New Game")
+                    .font(.headline)
+                
+                Spacer()
+                
+                Button("Start") {
+                    Task {
+                        do {
+                            let gameSession = try await viewModel.startGame()
+                            onGameCreated?(gameSession)
+                            dismiss()
+                        } catch {
+                            errorMessage = error.localizedDescription
+                            showingError = true
+                        }
+                    }
+                }
+                .disabled(!viewModel.canStartGame)
+                .accessibilityIdentifier("StartGameButton")
+            }
+            .padding()
+            .background(Color(.systemBackground))
+            .overlay(
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(Color(.separator)),
+                alignment: .bottom
+            )
+            
+            // Form Content
             Form {
                 // Mountain Selection Section
                 Section("SELECT AREA") {
-                    ForEach(["Free Range", "Squallywood"], id: \.self) { mountain in
-                        Button {
-                            viewModel.selectedMountain = mountain
-                        } label: {
-                            HStack {
-                                Text(mountain)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                if viewModel.selectedMountain == mountain {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.blue)
+                    if viewModel.isLoading {
+                        ProgressView()
+                    } else {
+                        ForEach(viewModel.availableMountains, id: \.id) { mountain in
+                            Button {
+                                viewModel.selectedMountain = mountain
+                            } label: {
+                                HStack {
+                                    Text(mountain.name ?? "")
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    if viewModel.selectedMountain?.id == mountain.id {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(.blue)
+                                    }
                                 }
                             }
+                            .accessibilityIdentifier("mountain-\(mountain.name ?? "")")
                         }
-                        .accessibilityIdentifier("mountain-\(mountain)")
                     }
                 }
                 
                 // Player Entry Section
                 Section {
-                    ForEach(0..<viewModel.playerNames.count, id: \.self) { index in
-                        TextField("Player \(index + 1)", text: $viewModel.playerNames[index])
-                            .textFieldStyle(.roundedBorder)
-                            .submitLabel(.done)
-                            .focused($focusedField, equals: index)
-                            .accessibilityIdentifier("Player \(index + 1)")
-                    }
-                    
-                    Button("Add Player") {
-                        viewModel.addPlayerField()
-                        focusedField = viewModel.playerNames.count - 1
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(viewModel.playerNames.count >= 10)
-                    .accessibilityIdentifier("AddPlayerButton")
-                }
-                
-                // Start Game Section
-                Section {
-                    Button("Start") {
-                        Task {
-                            do {
-                                print("Starting game creation process...")
-                                let gameSession = try await viewModel.startGame()
-                                print("Game created successfully, dismissing view...")
-                                onGameCreated?(gameSession)
-                                dismiss()
-                            } catch {
-                                print("Error creating game: \(error)")
-                                errorMessage = error.localizedDescription
-                                showingError = true
-                            }
+                    VStack(spacing: 12) {
+                        ForEach(0..<viewModel.playerNames.count, id: \.self) { index in
+                            TextField("Player \(index + 1)", text: $viewModel.playerNames[index])
+                                .textFieldStyle(.roundedBorder)
+                                .submitLabel(.done)
+                                .focused($focusedField, equals: index)
+                                .frame(maxWidth: .infinity)
+                                .accessibilityIdentifier("Player \(index + 1)")
                         }
+                        
+                        Button("Add Player") {
+                            viewModel.addPlayerField()
+                            focusedField = viewModel.playerNames.count - 1
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(viewModel.playerNames.count >= 10)
+                        .accessibilityIdentifier("AddPlayerButton")
                     }
-                    .frame(maxWidth: .infinity)
-                    .disabled(!viewModel.canStartGame)
-                    .accessibilityIdentifier("StartGameButton")
+                    .padding(.vertical, 8)
                 }
             }
-            .navigationTitle("New Game")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-            }
+        }
+        .alert("Error", isPresented: $showingError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(errorMessage)
+        }
+        .task {
+            await viewModel.loadMountains()
         }
     }
 }
 
 #Preview {
-    GameBuilderView(viewContext: CoreDataStack.preview.viewContext)
+    let coreDataStack = CoreDataStack.preview
+    let appState = AppStateManager(coreDataStack: coreDataStack)
+    let gameState = GameStateManager(viewContext: coreDataStack.viewContext, appState: appState)
+    
+    return GameBuilderView(
+        viewContext: coreDataStack.viewContext,
+        gameState: gameState
+    )
+    .environmentObject(appState)
 }
 

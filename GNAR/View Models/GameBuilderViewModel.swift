@@ -14,67 +14,92 @@ import CoreData
 class GameBuilderViewModel: ObservableObject {
     // MARK: - Properties
     
-    @Published var playerNames: [String] = [""]
-    @Published var selectedMountain: String = "Free Range"
+    @Published var selectedMountain: Mountain?
+    @Published var playerNames: [String] = [""]  // Start with one empty field
     @Published var error: Error?
     @Published var isLoading = false
+    @Published var availableMountains: [Mountain] = []
     
     private let viewContext: NSManagedObjectContext
+    private let gameState: GameState
     
     // MARK: - Computed Properties
     
     var canStartGame: Bool {
-        !selectedMountain.isEmpty && 
-        playerNames.count >= 1 && 
-        playerNames.allSatisfy { !$0.isEmpty }
+        selectedMountain != nil && !playerNames.isEmpty && !playerNames.allSatisfy { $0.isEmpty }
     }
     
     // MARK: - Initialization
     
-    init(viewContext: NSManagedObjectContext) {
+    init(viewContext: NSManagedObjectContext, gameState: GameState) {
         self.viewContext = viewContext
+        self.gameState = gameState
     }
     
-    // MARK: - Methods
+    // MARK: - Actions
+    
+    func loadMountains() async {
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            let request = Mountain.fetchRequest()
+            request.sortDescriptors = [
+                NSSortDescriptor(keyPath: \Mountain.name, ascending: true)
+            ]
+            availableMountains = try await viewContext.fetch(request)
+            
+            // Select Free Range if it exists, otherwise select first mountain
+            if let freeRange = availableMountains.first(where: { $0.name == "Free Range" }) {
+                selectedMountain = freeRange
+            } else if let firstMountain = availableMountains.first {
+                selectedMountain = firstMountain
+            }
+        } catch {
+            self.error = error
+        }
+    }
     
     func addPlayerField() {
         playerNames.append("")
     }
     
     func startGame() async throws -> GameSession {
-        print("🎮 Starting game creation...")
+        guard let mountain = selectedMountain else {
+            throw GameError.mountainNotSelected
+        }
         
-        // Create the game session
-        let gameSession = GameSession(context: viewContext)
-        gameSession.id = UUID()
-        gameSession.mountainName = selectedMountain
-        gameSession.startDate = Date()
+        guard !playerNames.isEmpty else {
+            throw GameError.noPlayersSelected
+        }
         
-        print("🎮 Created game session with ID: \(gameSession.id.uuidString)")
-        print("🎮 Mountain: \(gameSession.mountainName)")
+        isLoading = true
+        defer { isLoading = false }
         
-        // Create and add players
-        for name in playerNames {
-            print("🎮 Creating player: \(name)")
+        // Create players
+        let players: [Player] = playerNames.compactMap { name in
+            guard !name.isEmpty else { return nil }
             let player = Player(context: viewContext)
             player.id = UUID()
             player.name = name
-            gameSession.addToPlayers(player)
-            player.addToGameSessions(gameSession)
+            return player
         }
         
-        print("🎮 Total players added: \(gameSession.playersArray.count)")
-        
-        print("🎮 Attempting to save context...")
-        do {
-            try viewContext.save()
-            print("🎮 Context saved successfully")
-            return gameSession
-        } catch {
-            print("🎮 Error saving context: \(error)")
-            // Rollback changes if save fails
-            viewContext.rollback()
-            throw error
+        try viewContext.save()
+        return try await gameState.startNewSession(mountain: mountain, players: players)
+    }
+}
+
+enum GameError: LocalizedError {
+    case mountainNotSelected
+    case noPlayersSelected
+    
+    var errorDescription: String? {
+        switch self {
+        case .mountainNotSelected:
+            return "Please select a mountain"
+        case .noPlayersSelected:
+            return "Please add at least one player"
         }
     }
 }

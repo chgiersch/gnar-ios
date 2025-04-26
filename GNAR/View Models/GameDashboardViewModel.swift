@@ -5,56 +5,122 @@
 //  Created by Chris Giersch on 4/3/25.
 //
 
-
-// GameDashboardViewModel.swift
-
 import Foundation
 import SwiftUI
 import CoreData
 
 @MainActor
 class GameDashboardViewModel: ObservableObject {
-    // MARK: - Properties
+    @Published var isLoading = false
+    @Published var scoreEntryViewModel: ScoreEntryViewModel?
+    @Published private(set) var isSessionLoaded = false
     
-    let session: GameSession
-    let viewContext: NSManagedObjectContext
+    @Published var gameState: GameState?
     
-    @Published var scores: [Score] = []
-    @Published var selectedPlayer: Player?
-    @Published var error: Error?
-    @Published var leaderboardSummaries: [LeaderboardSummary] = []
+    var session: GameSession {
+        guard let gameState = gameState, let session = gameState.currentSession else {
+            fatalError("GameDashboardViewModel accessed without a valid session. This should never happen as the view should only be presented with a valid session.")
+        }
+        return session
+    }
+
+    var selectedPlayer: Player? {
+        get { gameState?.selectedPlayer }
+        set { 
+            if gameState?.selectedPlayer?.id != newValue?.id {
+                print("GameDashboardViewModel: Setting selectedPlayer to \(newValue?.name ?? "nil")")
+                gameState?.selectedPlayer = newValue
+                objectWillChange.send()
+            }
+        }
+    }
+
+    var error: Error? {
+        get { gameState?.error }
+        set { 
+            if let newValue = newValue {
+                gameState?.error = newValue
+            }
+        }
+    }    
+        
+    var players: [Player] { gameState?.players ?? [] }
+    var scores: [Score] { gameState?.scores ?? [] }
+    var leaderboardSummaries: [LeaderboardSummary] { gameState?.leaderboardSummaries ?? [] }
+    var filteredScores: [Score] { gameState?.filteredScores ?? [] }
     
     // MARK: - Initialization
     
-    init(session: GameSession, viewContext: NSManagedObjectContext) {
-        self.session = session
-        self.viewContext = viewContext
-        self.selectedPlayer = session.playersArray.first
-        Task {
-            await loadScores()
-            await loadLeaderboard()
+    init(gameState: GameState?) {
+        self.gameState = gameState
+        print("GameDashboardViewModel initialized")
+    }
+    
+    /// Creates a ScoreEntryViewModel if one doesn't already exist
+    func updateScoreEntryViewModel() {
+        if let gameState = gameState, scoreEntryViewModel == nil {
+            print("GameDashboardViewModel: Creating new ScoreEntryViewModel")
+            self.scoreEntryViewModel = ScoreEntryViewModel(gameState: gameState)
         }
     }
     
-    // MARK: - Score Management
-    
-    func loadScores() async {
+    // MARK: - Session Management
+
+    /// Load a specific session, or the current one if none provided
+    func loadSession(_ session: GameSession? = nil) async {
+        guard let gameState = gameState else {
+            print("GameDashboardViewModel: No gameState available")
+            return
+        }
+        
+        // If already loaded and no new session provided, don't reload
+        if isSessionLoaded && session == nil {
+            print("GameDashboardViewModel: Session already loaded, skipping")
+            return
+        }
+        
+        isLoading = true
+        defer { isLoading = false }
+        
         do {
-            let request = Score.fetchRequest()
-            request.predicate = NSPredicate(format: "gameSession == %@", session)
-            request.sortDescriptors = [NSSortDescriptor(keyPath: \Score.timestamp, ascending: true)]
-            scores = try await viewContext.fetch(request)
+            if let specificSession = session {
+                // Load the provided session
+                print("GameDashboardViewModel: Loading session: \(specificSession.id.uuidString)")
+                try await gameState.loadSession(specificSession)
+            } else if let currentSession = gameState.currentSession {
+                // Load the current session by ID
+                print("GameDashboardViewModel: Reloading current session")
+                try await gameState.loadSessionById(currentSession.id)
+            } else {
+                print("GameDashboardViewModel: No session to load")
+                return
+            }
+            
+            isSessionLoaded = true
+            
+            // Create ScoreEntryViewModel only once
+            if scoreEntryViewModel == nil {
+                updateScoreEntryViewModel()
+                
+                // Load the available items if needed
+                if let mountain = gameState.currentSession?.mountain, let viewModel = scoreEntryViewModel {
+                    await viewModel.loadAvailableItems()
+                }
+            }
         } catch {
+            print("GameDashboardViewModel: Error loading session: \(error.localizedDescription)")
             self.error = error
         }
     }
     
     func deleteScore(_ score: Score) async {
+        guard let gameState = gameState else { return }
+        
+        isLoading = true
+        defer { isLoading = false }
+        
         do {
-            viewContext.delete(score)
-            try viewContext.save()
-            await loadScores()
-            await loadLeaderboard()
+            try await gameState.deleteScore(score)
         } catch {
             self.error = error
         }
@@ -63,52 +129,73 @@ class GameDashboardViewModel: ObservableObject {
     // MARK: - Player Management
     
     func selectPlayer(_ player: Player) {
-        selectedPlayer = player
+        print("GameDashboardViewModel: Selecting player \(player.name)")
+        gameState?.selectedPlayer = player
+        print("GameDashboardViewModel: After selection, selectedPlayer = \(gameState?.selectedPlayer?.name ?? "nil")")
     }
     
     func clearSelectedPlayer() {
-        selectedPlayer = nil
+        print("GameDashboardViewModel: Clearing selected player")
+        gameState?.selectedPlayer = nil
+        print("GameDashboardViewModel: After clearing, selectedPlayer = \(gameState?.selectedPlayer?.name ?? "nil")")
     }
     
     // MARK: - Leaderboard
     
-    var filteredScores: [Score] {
-        guard let selected = selectedPlayer else { return [] }
-        return scores.filter { $0.player == selected }
-    }
-    
     func loadLeaderboard() async {
-        await updateLeaderboard()
+        guard let gameState = gameState else { return }
+        
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            try await gameState.loadLeaderboard()
+        } catch {
+            self.error = error
+        }
     }
-    
-    private func updateLeaderboard() {
-        let players = session.playersArray
-        var summaries: [LeaderboardSummary] = []
+
+    // MARK: - Scores
+
+    func loadScores() async {
+        guard let gameState = gameState else { return }
         
-        // Sort players by their scores in this game session
-        let sortedPlayers = players.sorted { (player1: Player, player2: Player) in
-            let player1Scores = session.scoresArray.filter { $0.player?.id == player1.id }
-            let player2Scores = session.scoresArray.filter { $0.player?.id == player2.id }
-            
-            let player1Total = player1Scores.reduce(0) { $0 + $1.gnarScore }
-            let player2Total = player2Scores.reduce(0) { $0 + $1.gnarScore }
-            
-            // First sort by gnarScore
-            if player1Total != player2Total {
-                return player1Total > player2Total
-            }
-            
-            // If scores are equal, sort by name
-            return player1.name < player2.name
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            // Just reload the leaderboard which refreshes scores
+            try await gameState.loadLeaderboard()
+        } catch {
+            self.error = error
+        }
+    }
+
+    /// Prepare the score entry view model for displaying the score entry UI
+    func prepareScoreEntry() async -> Bool {
+        // Make sure we have a gameState
+        guard let gameState = gameState else {
+            print("GameDashboardViewModel: No gameState available")
+            return false
         }
         
-        // Create summaries with ranks
-        for (index, player) in sortedPlayers.enumerated() {
-            let rank = index + 1
-            let summary = LeaderboardSummary(player: player, gameSession: session, rank: rank)
-            summaries.append(summary)
+        // Make sure session is loaded
+        if !isSessionLoaded {
+            await loadSession()
         }
         
-        self.leaderboardSummaries = summaries
+        // Create ScoreEntryViewModel if needed
+        if scoreEntryViewModel == nil {
+            print("GameDashboardViewModel: Creating new ScoreEntryViewModel")
+            scoreEntryViewModel = ScoreEntryViewModel(gameState: gameState)
+        }
+        
+        // Load available items
+        if let viewModel = scoreEntryViewModel {
+            await viewModel.loadAvailableItems()
+            return true
+        }
+        
+        return false
     }
 }

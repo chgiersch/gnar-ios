@@ -20,54 +20,76 @@ struct GameDashboardView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            List {
-                // Leaderboard Section
-                LeaderboardSection(
-                    summaries: viewModel.leaderboardSummaries,
-                    selectedPlayer: $viewModel.selectedPlayer
-                )
-                
-                // Score History Section
-                ScoreHistorySection(
-                    viewModel: viewModel,
-                    scores: viewModel.filteredScores,
-                    expandedScoreIDs: $expandedScoreIDs
-                )
-            }
-            .navigationTitle(viewModel.session.mountainName)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("End Game") {
-                        dismiss()
-                    }
-                    .accessibilityIdentifier("EndGameButton")
+        Group {
+            if viewModel.isLoading {
+                VStack {
+                    ProgressView()
+                        .padding()
+                    Text("Loading game data...")
                 }
-                
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showingScoreEntry = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .disabled(viewModel.selectedPlayer == nil)
-                    .accessibilityIdentifier("AddScoreButton")
-                }
-            }
-            .sheet(isPresented: $showingScoreEntry) {
-                if let selectedPlayer = viewModel.selectedPlayer {
-                    ScoreEntryView(
-                        viewContext: viewContext,
-                        selectedPlayer: selectedPlayer,
-                        gameSession: viewModel.session,
-                        onDismiss: {
-                            showingScoreEntry = false
-                            Task {
-                                await viewModel.loadScores()
-                                await viewModel.loadLeaderboard()
-                            }
-                        }
+            } else {
+                List {
+                    // Leaderboard Section
+                    LeaderboardSection(
+                        summaries: viewModel.leaderboardSummaries,
+                        selectedPlayer: $viewModel.selectedPlayer
                     )
+                    
+                    // Score History Section
+                    ScoreHistorySection(
+                        viewModel: viewModel,
+                        scores: viewModel.filteredScores,
+                        expandedScoreIDs: $expandedScoreIDs
+                    )
+                }
+                .animation(.easeInOut, value: viewModel.filteredScores.count)
+                .onChange(of: viewModel.selectedPlayer) { oldValue, newValue in
+                    print("GameDashboardView: selectedPlayer changed from \(oldValue?.name ?? "nil") to \(newValue?.name ?? "nil")")
+                }
+            }
+        }
+        .animation(.easeInOut, value: viewModel.isLoading)
+        .navigationTitle(viewModel.gameState?.currentSession?.mountain.name ?? "Game")
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Exit") {
+                    dismiss()
+                }
+                .accessibilityIdentifier("EndGameButton")
+            }
+            
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    Task {
+                        if await viewModel.prepareScoreEntry() {
+                            showingScoreEntry = true
+                        }
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .disabled(viewModel.selectedPlayer == nil || !viewModel.isSessionLoaded)
+                .accessibilityIdentifier("AddScoreButton")
+            }
+        }
+        .sheet(isPresented: $showingScoreEntry) {
+            if let scoreViewModel = viewModel.scoreEntryViewModel {
+                ScoreEntryView(viewModel: scoreViewModel)
+                    .onChange(of: scoreViewModel.didSaveScore) { oldValue, newValue in
+                        if newValue {
+                            scoreViewModel.didSaveScore = false
+                        }
+                    }
+            } else {
+                VStack {
+                    ProgressView()
+                        .padding()
+                    Text("Loading score data...")
+                }
+                .onAppear {
+                    Task {
+                        await viewModel.prepareScoreEntry()
+                    }
                 }
             }
         }

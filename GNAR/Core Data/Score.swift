@@ -45,6 +45,26 @@ extension Score {
         return NSFetchRequest<Score>(entityName: "Score")
     }
     
+    // MARK: - Score Calculation
+    
+    func calculateTotalScore() {
+        // Get line score points
+        let linePoints = lineScore?.points ?? 0
+        
+        // Calculate trick bonus points
+        let trickPoints = trickBonusScoresArray.reduce(0) { $0 + $1.points }
+        
+        // Calculate ECP points
+        let ecpPoints = ecpScoresArray.reduce(0) { $0 + $1.points }
+        
+        // Calculate penalty points
+        let penaltyPoints = penaltyScoresArray.reduce(0) { $0 + $1.points }
+        
+        // Calculate total scores
+        gnarScore = linePoints + trickPoints + ecpPoints - penaltyPoints
+        heroScore = abs(linePoints) + abs(trickPoints) + abs(ecpPoints) + abs(penaltyPoints)
+    }
+    
     // MARK: - Factory Methods
     
     static func create(
@@ -100,37 +120,44 @@ extension Score {
     func addToTrickBonusScores(_ trickScore: TrickBonusScore) {
         let items = mutableSetValue(forKey: "trickBonusScores")
         items.add(trickScore)
+        calculateTotalScore()
     }
     
     func removeFromTrickBonusScores(_ trickScore: TrickBonusScore) {
         let items = mutableSetValue(forKey: "trickBonusScores")
         items.remove(trickScore)
+        calculateTotalScore()
     }
     
     func addToEcpScores(_ ecpScore: ECPScore) {
         let items = mutableSetValue(forKey: "ecpScores")
         items.add(ecpScore)
+        calculateTotalScore()
     }
     
     func removeFromEcpScores(_ ecpScore: ECPScore) {
         let items = mutableSetValue(forKey: "ecpScores")
         items.remove(ecpScore)
+        calculateTotalScore()
     }
     
     func addToPenaltyScores(_ penaltyScore: PenaltyScore) {
         let items = mutableSetValue(forKey: "penaltyScores")
         items.add(penaltyScore)
+        calculateTotalScore()
     }
     
     func removeFromPenaltyScores(_ penaltyScore: PenaltyScore) {
         let items = mutableSetValue(forKey: "penaltyScores")
         items.remove(penaltyScore)
+        calculateTotalScore()
     }
     
     func addLineScore(_ lineWorth: LineWorth, snowLevel: SnowLevel, in context: NSManagedObjectContext) {
         let lineScore = LineScore.create(in: context, lineWorth: lineWorth, snowLevel: snowLevel)
         lineScore.score = self
         self.lineScore = lineScore
+        calculateTotalScore()
     }
     
     func addTrickBonusScore(_ trickBonus: TrickBonus, in context: NSManagedObjectContext) {

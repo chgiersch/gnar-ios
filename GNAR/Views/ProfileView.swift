@@ -9,6 +9,8 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @EnvironmentObject var appState: AppStateManager
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -26,5 +28,9 @@ struct ProfileView: View {
 }
 
 #Preview {
-    ProfileView()
+    let coreDataStack = CoreDataStack.preview
+    let appState = AppStateManager(coreDataStack: coreDataStack)
+    
+    return ProfileView()
+        .environmentObject(appState)
 }

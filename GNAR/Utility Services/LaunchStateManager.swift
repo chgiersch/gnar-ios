@@ -37,15 +37,15 @@ final class LaunchStateManager: ObservableObject {
             loadingProgress = 0.8
         }
 
-        // Final loading steps
-        loadingMessage = "Finalizing..."
+        // Initialize GameStateManager
+        loadingMessage = "Initializing game state..."
         loadingProgress = 0.9
         
         // Small delay for UI smoothness
         try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
         
         loadingProgress = 1.0
-        appState.isReady = true
+        appState.isLoading = false
     }
 
     @MainActor

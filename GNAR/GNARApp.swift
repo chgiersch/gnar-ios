@@ -10,35 +10,49 @@ import CoreData
 
 @main
 struct GNARApp: App {
-    @StateObject private var appState = AppState()
-    @StateObject private var launchManager: LaunchStateManager
-    @State private var contentViewModel: ContentViewModel?
+    @StateObject private var appStateManager: AppStateManager
+    @StateObject private var gameStateManager: GameStateManager
+    @StateObject private var launchStateManager: LaunchStateManager
+    @StateObject private var contentViewModel: ContentViewModel
+    
     private let coreDataStack = CoreDataStack.shared
-
+    
+    // MARK: - Initialization
     init() {
-        let appState = AppState()
-        _appState = StateObject(wrappedValue: appState)
-        _launchManager = StateObject(wrappedValue: LaunchStateManager(
-            coreDataStack: CoreDataStack.shared,
-            appState: appState
-        ))
+        // Create AppState instance first and configure with CoreDataStack
+        let appStateInstance = AppStateManager(coreDataStack: CoreDataStack.shared)
+        _appStateManager = StateObject(wrappedValue: appStateInstance)
+        
+        // Initialize GameStateManager with CoreData context
+        let gameManager = GameStateManager(
+            viewContext: coreDataStack.viewContext,
+            appState: appStateInstance
+        )
+        _gameStateManager = StateObject(wrappedValue: gameManager)
+        
+        // Initialize ContentViewModel
+        _contentViewModel = StateObject(wrappedValue: ContentViewModel(gameState: gameManager, appState: appStateInstance))
+        
+        // Use appStateInstance (not appState) for LaunchStateManager
+        let launchManager = LaunchStateManager(
+            coreDataStack: coreDataStack,
+            appState: appStateInstance  // Use the instance, not the property
+        )
+        _launchStateManager = StateObject(wrappedValue: launchManager)
     }
-
+    
     var body: some Scene {
         WindowGroup {
-            RootView(
-                appState: appState,
-                contentViewModel: contentViewModel
-            )
-            .environment(\.managedObjectContext, coreDataStack.viewContext)
-            .environmentObject(appState)
-            .environmentObject(launchManager)
-            .task {
-                await launchManager.beginLaunchSequence()
-                await MainActor.run {
-                    contentViewModel = ContentViewModel(coreDataStack: coreDataStack)
+            Group {
+            if appStateManager.isLoading {
+                LoadingScreen()
+            } else {
+                    ContentView(viewModel: contentViewModel)
                 }
             }
+            .environmentObject(appStateManager)
+            .environmentObject(gameStateManager)
+            .environmentObject(launchStateManager)
         }
     }
     
@@ -57,7 +71,7 @@ struct GNARApp: App {
     }
     
     func deleteAllMountains() async {
-        let context = coreDataStack.viewContext
+        let context = CoreDataStack.shared.viewContext
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = Mountain.fetchRequest()
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         
@@ -71,7 +85,7 @@ struct GNARApp: App {
     }
     
     func deleteAllGameSessions() async {
-        let context = coreDataStack.viewContext
+        let context = CoreDataStack.shared.viewContext
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = GameSession.fetchRequest()
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         
@@ -86,8 +100,3 @@ struct GNARApp: App {
     #endif
 }
 
-// Separate class to handle app-wide state
-class AppState: ObservableObject {
-    @Published var mountainSeedingComplete: Bool = false
-    @Published var isReady = false
-}

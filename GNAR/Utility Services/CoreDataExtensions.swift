@@ -42,14 +42,3 @@ extension CodingUserInfoKey {
     /// Context key for JSONDecoder with CoreData
     static let codingContext = CodingUserInfoKey(rawValue: "context")
 }
-
-// MARK: - MountainPreview Extension
-
-extension MountainPreview {
-    /// Initialize a mountain preview from a Mountain entity
-    init(mountain: Mountain) {
-        self.id = mountain.id
-        self.name = mountain.name == "Global" ? "Free Range" : (mountain.name)
-        self.isGlobal = mountain.isGlobal
-    }
-} 

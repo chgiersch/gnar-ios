@@ -9,6 +9,8 @@
 import SwiftUI
 
 struct HomeView: View {
+    @EnvironmentObject var appState: AppStateManager
+    
     var body: some View {
         VStack(spacing: 0) {
             // Fixed header
@@ -124,5 +126,9 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView()
+    let coreDataStack = CoreDataStack.preview
+    let appState = AppStateManager(coreDataStack: coreDataStack)
+    
+    return HomeView()
+        .environmentObject(appState)
 }

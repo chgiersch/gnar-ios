@@ -64,14 +64,21 @@ struct LoadingScreen: View {
                 }
             }
         }
+        .task {
+            await launchManager.beginLaunchSequence()
+        }
     }
 }
 
 // Preview
 #Preview {
-    LoadingScreen()
+    let coreDataStack = CoreDataStack.preview
+    let appState = AppStateManager(coreDataStack: coreDataStack)
+    
+    return LoadingScreen()
         .environmentObject(LaunchStateManager(
-            coreDataStack: CoreDataStack.preview,
-            appState: AppState()
+            coreDataStack: coreDataStack,
+            appState: appState
         ))
+        .environmentObject(appState)
 }

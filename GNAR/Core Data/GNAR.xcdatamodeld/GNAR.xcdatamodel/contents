@@ -19,8 +19,8 @@
     </entity>
     <entity name="GameSession" representedClassName="GameSession" syncable="YES">
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="mountainName" attributeType="String"/>
         <attribute name="startDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="mountain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Mountain" inverseName="gameSessions" inverseEntity="Mountain"/>
         <relationship name="players" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Player" inverseName="gameSessions" inverseEntity="Player"/>
         <relationship name="scores" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Score" inverseName="gameSession" inverseEntity="Score"/>
     </entity>
@@ -50,6 +50,7 @@
         <attribute name="isGlobal" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="name" attributeType="String"/>
         <relationship name="ecps" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ECP" inverseName="mountain" inverseEntity="ECP"/>
+        <relationship name="gameSessions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="GameSession" inverseName="mountain" inverseEntity="GameSession"/>
         <relationship name="lineWorths" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="LineWorth" inverseName="mountain" inverseEntity="LineWorth"/>
         <relationship name="penalties" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Penalty" inverseName="mountain" inverseEntity="Penalty"/>
         <relationship name="trickBonuses" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TrickBonus" inverseName="mountain" inverseEntity="TrickBonus"/>

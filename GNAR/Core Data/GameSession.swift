@@ -12,7 +12,7 @@ import CoreData
 @objc(GameSession)
 public class GameSession: NSManagedObject, Identifiable {
     @NSManaged public var id: UUID
-    @NSManaged public var mountainName: String
+    @NSManaged public var mountain: Mountain
     @NSManaged public var startDate: Date?
     @NSManaged public var players: NSSet?
     @NSManaged public var scores: NSSet?

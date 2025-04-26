@@ -14,6 +14,30 @@ struct ScoreHistoryRow: View {
     let onTap: () -> Void
     let onDelete: () async -> Void
     let session: GameSession
+    
+    // Calculate the correct GNAR score directly
+    private var correctGnarScore: Int32 {
+        let linePoints = score.lineScore?.points ?? 0
+        let trickPoints = score.trickBonusScoresArray.reduce(0) { $0 + $1.points }
+        let ecpPoints = score.ecpScoresArray.reduce(0) { $0 + $1.points }
+        let penaltyPoints = score.penaltyScoresArray.reduce(0) { $0 + $1.points }
+        
+        return linePoints + trickPoints + ecpPoints - penaltyPoints
+    }
+    
+    init(score: Score, isExpanded: Bool, onTap: @escaping () -> Void, onDelete: @escaping () async -> Void, session: GameSession) {
+        self.score = score
+        self.isExpanded = isExpanded
+        self.onTap = onTap
+        self.onDelete = onDelete
+        self.session = session
+        
+        print("ScoreHistoryRow - gnarScore: \(score.gnarScore), heroScore: \(score.heroScore)")
+        print("ScoreHistoryRow - Line points: \(score.lineScore?.points ?? 0)")
+        print("ScoreHistoryRow - Trick points: \(score.trickBonusScoresArray.reduce(0) { $0 + $1.points })")
+        print("ScoreHistoryRow - ECP points: \(score.ecpScoresArray.reduce(0) { $0 + $1.points })")
+        print("ScoreHistoryRow - Penalty points: \(score.penaltyScoresArray.reduce(0) { $0 + $1.points })")
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -35,7 +59,7 @@ struct ScoreHistoryRow: View {
                 } else {
                     HStack(spacing: 8) {
                         if score.ecpScores != nil {
-                            Image(systemName: "skiing.downhill.fill")
+                            Image(systemName: "figure.skiing.downhill")
                                 .foregroundColor(.blue)
                         }
                         if score.trickBonusScores != nil {
@@ -52,7 +76,7 @@ struct ScoreHistoryRow: View {
                 Spacer()
 
                 if !isExpanded {
-                    Text("\(score.gnarScore) pts")
+                    Text("\(correctGnarScore) pts")
                         .font(.subheadline)
                         .bold()
                         .padding(.leading, 8)
@@ -97,7 +121,7 @@ struct ScoreHistoryRow: View {
                     )
                     HStack {
                         Spacer()
-                        Text("Total: \(score.gnarScore) pts")
+                        Text("Total: \(correctGnarScore) pts")
                             .font(.subheadline)
                             .bold()
                     }
