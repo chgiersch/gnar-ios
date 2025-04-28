@@ -78,10 +78,13 @@
         <relationship name="scores" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Score" inverseName="player" inverseEntity="Score"/>
     </entity>
     <entity name="Score" representedClassName="Score" syncable="YES">
-        <attribute name="gnarScore" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="heroScore" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="gnarScore" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="heroScore" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="isSoftDeleted" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="modifiedAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="syncedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="ecpScores" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ECPScore" inverseName="parentScore" inverseEntity="ECPScore"/>
         <relationship name="gameSession" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="GameSession" inverseName="scores" inverseEntity="GameSession"/>
         <relationship name="lineScore" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LineScore" inverseName="score" inverseEntity="LineScore"/>

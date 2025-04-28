@@ -241,7 +241,7 @@ class ScoreEntryViewModel: ObservableObject {
             let score = Score(context: gameState.viewContext)
             score.id = UUID()
             score.player = player
-            score.timestamp = Date()
+            score.createdAt = Date()
             score.gameSession = currentSession
             
             // Add line score if selected

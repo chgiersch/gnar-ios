@@ -64,10 +64,7 @@ struct ScoreHistorySection: View {
     /// Returns scores sorted by timestamp, newest first
     private var sortedScores: [Score] {
         scores.sorted { (score1, score2) -> Bool in
-            guard let date1 = score1.timestamp, let date2 = score2.timestamp else {
-                return false
-            }
-            return date1 > date2
+            return score1.createdAt > score2.createdAt
         }
     }
 

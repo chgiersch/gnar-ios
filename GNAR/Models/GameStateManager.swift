@@ -206,7 +206,7 @@ final class GameStateManager: ObservableObject, GameState {
         let request: NSFetchRequest<Score> = Score.fetchRequest()
         request.predicate = NSPredicate(format: "gameSession == %@", session)
         request.sortDescriptors = [
-            NSSortDescriptor(keyPath: \Score.timestamp, ascending: false)
+            NSSortDescriptor(keyPath: \Score.createdAt, ascending: false)
         ]
         
         let scores = try await viewContext.fetch(request)

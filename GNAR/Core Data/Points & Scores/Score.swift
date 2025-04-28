@@ -12,9 +12,12 @@ import CoreData
 @objc(Score)
 public class Score: NSManagedObject, Identifiable {
     @NSManaged public var id: UUID
-    @NSManaged public var timestamp: Date?
+    @NSManaged public var createdAt: Date
+    @NSManaged public var modifiedAt: Date
+    @NSManaged public var syncedAt: Date?
     @NSManaged public var gnarScore: Int32
     @NSManaged public var heroScore: Int32
+    @NSManaged public var isSoftDeleted: Bool
     
     @NSManaged public var lineScore: LineScore?
     @NSManaged public var trickBonusScores: NSSet?
@@ -78,7 +81,10 @@ extension Score {
     ) -> Score {
         let score = Score(context: context)
         score.id = UUID()
-        score.timestamp = Date()
+        score.createdAt = Date()
+        score.modifiedAt = score.createdAt
+        score.syncedAt = nil
+        score.isSoftDeleted = false
         score.player = player
         score.lineScore = lineScore
         score.gameSession = gameSession
@@ -116,6 +122,11 @@ extension Score {
     }
     
     // MARK: - Helper Methods
+    
+    func softDelete() {
+        isSoftDeleted = true
+        modifiedAt = Date()
+    }
     
     func addToTrickBonusScores(_ trickScore: TrickBonusScore) {
         let items = mutableSetValue(forKey: "trickBonusScores")
@@ -185,5 +196,73 @@ extension Score {
         penaltyScore.timestamp = Date()
         penaltyScore.points = penalty.points
         self.addToPenaltyScores(penaltyScore)
+    }
+}
+
+
+extension Score {
+    func toSyncPayload() -> ScoreSyncPayload? {
+        guard let player = player else {
+            print("⚠️ Score \(id) has no associated Player")
+            return nil
+        }
+        
+        return ScoreSyncPayload(
+            id: id,
+            playerId: player.id,
+            createdAt: createdAt,
+            modifiedAt: modifiedAt,
+            isSoftDeleted: isSoftDeleted,
+            gnarScore: gnarScore,
+            heroScore: heroScore,
+            lineScoreId: lineScore?.id,
+            trickBonusScoreIds: trickBonusScoresArray.map { $0.id },
+            ecpScoreIds: ecpScoresArray.map { $0.id },
+            penaltyScoreIds: penaltyScoresArray.map { $0.id }
+        )
+    }
+    
+    /// Merges the incoming sync payload into Core Data.
+    /// - Parameters:
+    ///   - payload: The `ScoreSyncPayload` received via Multipeer.
+    ///   - context: The Core Data context to apply the change in.
+    /// - Returns: The updated or created `Score` object.
+    static func merge(from payload: ScoreSyncPayload, into context: NSManagedObjectContext) throws -> Score {
+        // Try to fetch the existing Score ID
+        let fetchRequest: NSFetchRequest<Score> = Score.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", payload.id as CVarArg)
+        fetchRequest.fetchLimit = 1
+        
+        let existingScore = try context.fetch(fetchRequest).first
+        
+        if let score = existingScore {
+            // Existing score found - check which is newer
+            if payload.modifiedAt > score.modifiedAt {
+                print("🔄 Updating Score \(score.id)")
+                score.applyPayload(payload)
+            } else {
+                print("⚠️ Incoming payload for Score \(score.id) is older — ignoring")
+            }
+            return score
+        } else {
+            // No existing score — create new
+            print("🆕 Creating new Score \(payload.id)")
+            let newScore = Score(context: context)
+            newScore.id = payload.id
+            newScore.createdAt = payload.createdAt
+            newScore.applyPayload(payload)
+            return newScore
+        }
+    }
+     
+    /// Applies a sync payload onto an existing Score object.
+    /// - Parameter payload: The sync payload to apply.
+    func applyPayload(_ payload: ScoreSyncPayload) {
+        self.modifiedAt = payload.modifiedAt
+        self.isSoftDeleted = payload.isSoftDeleted
+        self.gnarScore = payload.gnarScore
+        self.heroScore = payload.heroScore
+        
+        // TODO: Update lineScore, trickBonusScores, ecpScores, penaltyScores
     }
 }
