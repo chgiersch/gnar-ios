@@ -19,7 +19,7 @@ public class LineScore: NSManagedObject, Identifiable {
     @NSManaged public var score: Score?
 }
 
-public enum SnowLevel: String, CaseIterable, Hashable {
+public enum SnowLevel: String, CaseIterable, Hashable, Codable {
     case low, medium, high
     
     var displayColor: Color {
