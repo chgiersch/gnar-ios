@@ -40,11 +40,24 @@ extension LineScore {
         return NSFetchRequest<LineScore>(entityName: "LineScore")
     }
     
+    var snowLevelEnum: SnowLevel {
+        get {
+            guard let rawValue = snowLevel,
+                  let level = SnowLevel(rawValue: rawValue) else {
+                return .medium  // Default fallback for MVP
+            }
+            return level
+        }
+        set {
+            snowLevel = newValue.rawValue
+        }
+    }
+    
     static func create(in context: NSManagedObjectContext, lineWorth: LineWorth, snowLevel: SnowLevel) -> LineScore {
         let lineScore = LineScore(context: context)
         lineScore.id = UUID()
         lineScore.lineWorth = lineWorth
-        lineScore.snowLevel = snowLevel.rawValue
+        lineScore.snowLevelEnum = snowLevel  // Use snowLevelEnum setter
         
         // Calculate and store points based on snow level
         switch snowLevel {

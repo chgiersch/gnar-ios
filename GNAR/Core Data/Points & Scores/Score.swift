@@ -228,7 +228,6 @@ extension Score {
             isSoftDeleted: isSoftDeleted,
             gnarScore: gnarScore,
             heroScore: heroScore,
-            // TODO: Apply toPayloadIfNew()
             lineScore: lineScore?.toPayload(),
             trickBonusScores: trickBonusScoresArray.map { $0.toPayload() },
             ecpScores: ecpScoresArray.map { $0.toPayload() },
@@ -249,40 +248,24 @@ extension Score {
         
         let existingScore = try context.fetch(fetchRequest).first
         
-        let score: Score
-        if let score = existingScore {
+        if let existingScore = existingScore {
             // Existing score found - check which is newer
-            if payload.modifiedAt > score.modifiedAt {
-                print("🔄 Updating Score \(score.id)")
-                score.applyPayload(payload, resolver: <#SyncRelationshipResolver#>)
+            if payload.modifiedAt > existingScore.modifiedAt {
+                print("🔄 Updating Score \(existingScore.id)")
+                existingScore.applyPayload(payload, resolver: resolver)
             } else {
-                print("⚠️ Incoming payload for Score \(score.id) is older — ignoring")
+                print("⚠️ Incoming payload for Score \(existingScore.id) is older — ignoring")
             }
-            return score
+            return existingScore
         } else {
-            // No existing score — create new
-            print("🆕 Creating new Score \(payload.id)")
+            // No score with that ID found - create a new one
+            print("➕ Creating new Score from payload \(payload.id)")
             let newScore = Score(context: context)
             newScore.id = payload.id
             newScore.createdAt = payload.createdAt
-            newScore.applyPayload(payload, resolver: <#SyncRelationshipResolver#>)
+            newScore.applyPayload(payload, resolver: resolver)
             return newScore
         }
-        
-        // Apply fields (always from payload)
-        score.modifiedAt = payload.modifiedAt
-        score.isSoftDeleted = payload.isSoftDeleted
-        score.gnarScore = payload.gnarScore
-        score.heroScore = payload.heroScore
-        score.creatorName = payload.creatorName
-        
-        // Resolve Relationships
-        score.player = resolver.resolvePlayer(with: payload.playerId)
-        score.gameSession = resolver.resolveGameSession(with: payload.gameSessionId)
-        score.lineScore = resolver.resolveLineScore(with: payload.lineScoreId)
-        score.trickBonusScores = resolver.resolveOrCreateTrickBonusScore(with: payload.trickBonusScoreIds)
-        score.ecpScores = resolver.resolveOrCreateECPScores(ids: payload.ecpScoreIds)
-        score.penaltyScores = resolver.resolveOrCreatePenaltyScores(ids: payload.penaltyScoreIds)
     }
      
     /// Applies a sync payload onto an existing Score object.
@@ -293,27 +276,32 @@ extension Score {
         self.isSoftDeleted = payload.isSoftDeleted
         self.gnarScore = payload.gnarScore
         self.heroScore = payload.heroScore
+        self.syncedAt = Date()  // Mark as synced on successful application
         
         // Resolve Relationships via resolver
         self.player = resolver.resolvePlayer(with: payload.playerId)
         self.gameSession = resolver.resolveGameSession(with: payload.gameSessionId)
         
-        self.lineScore = resolver.resolveLineScore(with: payload.lineScoreId)
-
-        let trickScores = resolver.resolveTrickBonusScore(with: payload.trickBonusScoreIds)
+        // Handle LineScore relationship
+        if let lineScorePayload = payload.lineScore {
+            self.lineScore = resolver.resolveOrCreateLineScore(from: lineScorePayload)
+        }
+        
+        // Handle TrickBonusScores
+        let trickScores = resolver.resolveOrCreateTrickBonusScores(from: payload.trickBonusScores)
         let trickSet = NSMutableSet(array: trickScores)
         self.trickBonusScores = trickSet
         
-        // Resolve ECPScores
-        let ecpScores = resolver.resolveECPScores(ids: payload.ecpScoreIds)
+        // Handle ECPScores
+        let ecpScores = resolver.resolveOrCreateECPScores(from: payload.ecpScores)
         let ecpSet = NSMutableSet(array: ecpScores)
         self.ecpScores = ecpSet
-
-        // Resolve PenaltyScores
-        let penaltyScores = resolver.resolvePenaltyScores(ids: payload.penaltyScoreIds)
+        
+        // Handle PenaltyScores
+        let penaltyScores = resolver.resolveOrCreatePenaltyScores(from: payload.penaltyScores)
         let penaltySet = NSMutableSet(array: penaltyScores)
         self.penaltyScores = penaltySet
-
+        
         calculateTotalScore()
     }
 }
@@ -323,29 +311,27 @@ struct SyncRelationshipResolver {
     
     // MARK: - LineScore
     
-//    func resolveLineScore(with id: UUID?) -> LineScore? {
-//        guard let id = id else { return nil }
-//        let request: NSFetchRequest<LineScore> = LineScore.fetchRequest()
-//        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-//        request.fetchLimit = 1
-//        return try? context.fetch(request).first
-//    }
-    
-    func resolveOrCreateLineScore(from payload: LineScorePayload?) -> LineScore {
-        guard let payload = payload else { return nil }
-        
+    func resolveOrCreateLineScore(from payload: LineScorePayload) -> LineScore {
         let request: NSFetchRequest<LineScore> = LineScore.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", payload.id as CVarArg)
         request.fetchLimit = 1
         
         if let existing = try? context.fetch(request).first {
+            // Update existing LineScore
+            existing.points = payload.points
+            existing.snowLevelEnum = payload.snowLevel
+            // Find LineWorth if needed
+            if existing.lineWorth == nil {
+                existing.lineWorth = findLineWorthById(payload.lineWorthId)
+            }
             return existing
         } else {
+            // Create new LineScore
             let newLineScore = LineScore(context: context)
             newLineScore.id = payload.id
             newLineScore.points = payload.points
-            newLineScore.snowLevel = payload.snowLevel
-            // TODO: Handle lineWorth lookup if needed here
+            newLineScore.snowLevelEnum = payload.snowLevel
+            newLineScore.lineWorth = findLineWorthById(payload.lineWorthId)
             return newLineScore
         }
     }
@@ -359,22 +345,22 @@ struct SyncRelationshipResolver {
     
     // MARK: - TrickBonusScore
     
-//    func resolveTrickBonusScore(with ids: [UUID]) -> [TrickBonusScore] {
-//        guard !ids.isEmpty else { return [] }
-//        let request: NSFetchRequest<TrickBonusScore> = TrickBonusScore.fetchRequest()
-//        request.predicate = NSPredicate(format: "id IN %@", ids)
-//        return (try? context.fetch(request)) ?? []
-//    }
-    
     func resolveOrCreateTrickBonusScores(from payloads: [TrickBonusScorePayload]) -> [TrickBonusScore] {
-        return payloads.map { payload in
+        return payloads.compactMap { payload in
             let request: NSFetchRequest<TrickBonusScore> = TrickBonusScore.fetchRequest()
             request.predicate = NSPredicate(format: "id == %@", payload.id as CVarArg)
             request.fetchLimit = 1
             
             if let existing = try? context.fetch(request).first {
+                // Update existing
+                existing.points = payload.points
+                existing.timestamp = payload.timestamp
+                if existing.trickBonus == nil {
+                    existing.trickBonus = findTrickBonusById(payload.trickBonusId)
+                }
                 return existing
             } else {
+                // Create new
                 let newScore = TrickBonusScore(context: context)
                 newScore.id = payload.id
                 newScore.points = payload.points
@@ -394,27 +380,27 @@ struct SyncRelationshipResolver {
     
     // MARK: - ECPScores
     
-//    func resolveECPScores(ids: [UUID]) -> [ECPScore] {
-//        guard !ids.isEmpty else { return [] }
-//        let request: NSFetchRequest<ECPScore> = ECPScore.fetchRequest()
-//        request.predicate = NSPredicate(format: "id IN %@", ids)
-//        return (try? context.fetch(request)) ?? []
-//    }
-    
     func resolveOrCreateECPScores(from payloads: [ECPSyncPayload]) -> [ECPScore] {
-        return payloads.map { payload in
+        return payloads.compactMap { payload in
             let request: NSFetchRequest<ECPScore> = ECPScore.fetchRequest()
             request.predicate = NSPredicate(format: "id == %@", payload.id as CVarArg)
             request.fetchLimit = 1
 
             if let existing = try? context.fetch(request).first {
+                // Update existing
+                existing.points = payload.points
+                existing.timestamp = payload.timestamp
+                if existing.ecp == nil {
+                    existing.ecp = findECPById(payload.ecpId)
+                }
                 return existing
             } else {
+                // Create new
                 let newScore = ECPScore(context: context)
                 newScore.id = payload.id
                 newScore.points = payload.points
                 newScore.timestamp = payload.timestamp
-                newScore.ecp = findECPById(payload.id)
+                newScore.ecp = findECPById(payload.ecpId)
                 return newScore
             }
         }
@@ -429,22 +415,22 @@ struct SyncRelationshipResolver {
     
     // MARK: - PenaltyScores
     
-//    func resolvePenaltyScores(ids: [UUID]) -> [PenaltyScore] {
-//        guard !ids.isEmpty else { return [] }
-//        let request: NSFetchRequest<PenaltyScore> = PenaltyScore.fetchRequest()
-//        request.predicate = NSPredicate(format: "id IN %@", ids)
-//        return (try? context.fetch(request)) ?? []
-//    }
-    
     func resolveOrCreatePenaltyScores(from payloads: [PenaltySyncPayload]) -> [PenaltyScore] {
-        return payloads.map { payload in
+        return payloads.compactMap { payload in
             let request: NSFetchRequest<PenaltyScore> = PenaltyScore.fetchRequest()
             request.predicate = NSPredicate(format: "id == %@", payload.id as CVarArg)
             request.fetchLimit = 1
 
             if let existing = try? context.fetch(request).first {
+                // Update existing
+                existing.points = payload.points
+                existing.timestamp = payload.timestamp
+                if existing.penalty == nil {
+                    existing.penalty = findPenaltyById(payload.penaltyId)
+                }
                 return existing
             } else {
+                // Create new
                 let newScore = PenaltyScore(context: context)
                 newScore.id = payload.id
                 newScore.points = payload.points
