@@ -58,8 +58,8 @@ class ScoreEntryViewModel: ObservableObject {
         // Add ECP points
         total += selectedECPs.reduce(0) { $0 + Int($1.points) }
         
-        // Subtract penalty points
-        total -= selectedPenalties.reduce(0) { $0 + Int($1.points) }
+        // Add penalty points (they should be negative)
+        total += selectedPenalties.reduce(0) { $0 + Int($1.points) }
         
         return total
     }
@@ -233,75 +233,61 @@ class ScoreEntryViewModel: ObservableObject {
             throw ScoreError.missingRequiredFields
         }
         
+        guard let currentSession = currentSession else {
+            throw ScoreError.missingRequiredFields
+        }
+        
         isLoading = true
         defer { isLoading = false }
         
         do {
-            // Create and populate the Score object
-            let score = Score(context: gameState.viewContext)
-            score.id = UUID()
-            score.player = player
-            score.createdAt = Date()
-            score.gameSession = currentSession
+            print("📝 ScoreEntryViewModel: Creating score for player \(player.name) in session \(currentSession.id)")
+            
+            // Create the score using the convenience initializer
+            let score = Score(context: viewContext, player: player, gameSession: currentSession)
             
             // Add line score if selected
             if let line = selectedLine {
-                let lineScore = LineScore(context: gameState.viewContext)
-                lineScore.id = UUID()
-                lineScore.lineWorth = line
-                lineScore.snowLevel = selectedSnowLevel.rawValue
-                switch selectedSnowLevel {
-                case .low:
-                    lineScore.points = line.basePointsLow?.int32Value ?? 0
-                case .medium:
-                    lineScore.points = line.basePointsMedium?.int32Value ?? 0
-                case .high:
-                    lineScore.points = line.basePointsHigh?.int32Value ?? 0
-                }
+                let lineScore = LineScore(context: viewContext, lineWorth: line, snowLevel: selectedSnowLevel)
                 score.lineScore = lineScore
             }
             
             // Add trick bonus scores
             for trick in selectedTricks {
-                let trickScore = TrickBonusScore(context: gameState.viewContext)
-                trickScore.id = UUID()
-                trickScore.timestamp = Date()
-                trickScore.trickBonus = trick
-                trickScore.points = trick.points
+                let trickScore = TrickBonusScore(context: viewContext, trickBonus: trick)
                 score.addToTrickBonusScores(trickScore)
             }
             
             // Add ECP scores
             for ecp in selectedECPs {
-                let ecpScore = ECPScore(context: gameState.viewContext)
-                ecpScore.id = UUID()
-                ecpScore.timestamp = Date()
-                ecpScore.ecp = ecp
-                ecpScore.points = ecp.points
+                let ecpScore = ECPScore(context: viewContext, ecp: ecp)
                 score.addToEcpScores(ecpScore)
             }
             
             // Add penalty scores
             for penalty in selectedPenalties {
-                let penaltyScore = PenaltyScore(context: gameState.viewContext)
-                penaltyScore.id = UUID()
-                penaltyScore.timestamp = Date()
-                penaltyScore.penalty = penalty
-                penaltyScore.points = penalty.points
+                print("📝 Adding penalty: \(penalty.name) (\(penalty.points) points)")
+                let penaltyScore = PenaltyScore(context: viewContext, penalty: penalty)
+                print("  - Created PenaltyScore with points: \(penaltyScore.points)")
                 score.addToPenaltyScores(penaltyScore)
             }
             
             // Calculate the final score
+            print("📊 Score \(score.id) Final Calculation:")
+            print("  - Line points: \(score.lineScore?.points ?? 0)")
+            print("  - Trick points: \(score.trickBonusScoresArray.reduce(0) { $0 + $1.points })")
+            print("  - ECP points: \(score.ecpScoresArray.reduce(0) { $0 + $1.points })")
+            print("  - Penalty points: \(score.penaltyScoresArray.reduce(0) { $0 + $1.points })")
             score.calculateTotalScore()
+            print("  - Final GNAR score: \(score.gnarScore)")
             
-            // Save to CoreData and update the app state
+            // Save using GameState
             try await gameState.addScore(score)
             
             // Reset form
             resetSelection()
             
             // Set the flag to signal the save was successful
-            // This will trigger UI updates through the onChange in the parent
             didSaveScore = true
         } catch {
             self.error = error

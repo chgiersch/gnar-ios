@@ -18,6 +18,15 @@ public class TrickBonusScore: NSManagedObject, Identifiable {
     
     @NSManaged public var trickBonus: TrickBonus?
     @NSManaged public var score: Score?
+    
+    convenience init(context: NSManagedObjectContext, trickBonus: TrickBonus) {
+        self.init(context: context)
+        self.id = UUID()
+        self.timestamp = Date()
+        self.trickBonus = trickBonus
+        self.points = trickBonus.points
+        self.verified = false
+    }
 }
 
 extension TrickBonusScore {

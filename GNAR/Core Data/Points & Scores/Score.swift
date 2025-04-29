@@ -30,106 +30,59 @@ public class Score: NSManagedObject, Identifiable {
     var playerName: String {
         return player?.name ?? "Unknown Player"
     }
-
-    var trickBonusScoresArray: [TrickBonusScore] {
-        (trickBonusScores?.allObjects as? [TrickBonusScore]) ?? []
-    }
-
-    var ecpScoresArray: [ECPScore] {
-        (ecpScores?.allObjects as? [ECPScore]) ?? []
-    }
-
-    var penaltyScoresArray: [PenaltyScore] {
-        (penaltyScores?.allObjects as? [PenaltyScore]) ?? []
-    }
-}
-
-extension Score {
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<Score> {
-        return NSFetchRequest<Score>(entityName: "Score")
+    
+    convenience init(context: NSManagedObjectContext, player: Player, gameSession: GameSession) {
+        print("📝 Score: Creating new score for \(player.name)")
+        self.init(context: context)
+        self.id = UUID()
+        self.player = player
+        self.creatorName = player.name
+        self.gameSession = gameSession
+        self.createdAt = Date()
+        self.modifiedAt = self.createdAt
+        self.isSoftDeleted = false
+        self.syncedAt = nil
+        self.gnarScore = 0
+        self.heroScore = 0
+        // Relationships are optional and will be initialized when needed
+        self.lineScore = nil
+        self.trickBonusScores = nil
+        self.ecpScores = nil
+        self.penaltyScores = nil
     }
     
-    // MARK: - Score Calculation
-    
-    func calculateTotalScore() {
-        // Get line score points
-        let linePoints = lineScore?.points ?? 0
-        
-        // Calculate trick bonus points
-        let trickPoints = trickBonusScoresArray.reduce(0) { $0 + $1.points }
-        
-        // Calculate ECP points
-        let ecpPoints = ecpScoresArray.reduce(0) { $0 + $1.points }
-        
-        // Calculate penalty points
-        let penaltyPoints = penaltyScoresArray.reduce(0) { $0 + $1.points }
-        
-        // Calculate total scores
-        gnarScore = linePoints + trickPoints + ecpPoints - penaltyPoints
-        heroScore = abs(linePoints) + abs(trickPoints) + abs(ecpPoints) + abs(penaltyPoints)
+    override public func awakeFromInsert() {
+        super.awakeFromInsert()
+        print("⚠️ Score: Created without convenience init - using defaults")
+        // Initialize required properties
+        self.id = UUID()
+        self.createdAt = Date()
+        self.modifiedAt = self.createdAt
+        self.isSoftDeleted = false
+        self.gnarScore = 0
+        self.heroScore = 0
+        // Relationships are optional and will be initialized when needed
+        self.lineScore = nil
+        self.trickBonusScores = nil
+        self.ecpScores = nil
+        self.penaltyScores = nil
     }
     
-    // MARK: - Factory Methods
+    // MARK: - Safe Array Accessors
     
-    static func create(
-        in context: NSManagedObjectContext,
-        player: Player,
-        lineScore: LineScore,
-        trickBonuses: [TrickBonus],
-        ecps: [ECP],
-        penalties: [Penalty],
-        into gameSession: GameSession,
-        creatorName: String
-    ) -> Score {
-        let score = Score(context: context)
-        score.id = UUID()
-        score.creatorName = player.name
-        score.createdAt = Date()
-        score.modifiedAt = score.createdAt
-        score.syncedAt = nil
-        score.isSoftDeleted = false
-        score.player = player
-        score.lineScore = lineScore
-        score.gameSession = gameSession
-        
-        // Create and calculate trick bonus scores
-        var totalTrickPoints: Int32 = 0
-        for trick in trickBonuses {
-            let trickScore = TrickBonusScore.create(in: context, trickBonus: trick, into: score)
-            score.addToTrickBonusScores(trickScore)
-            totalTrickPoints += trickScore.points
-        }
-        
-        // Create and calculate ECP scores
-        var totalECPPoints: Int32 = 0
-        for ecp in ecps {
-            let ecpScore = ECPScore.create(in: context, ecp: ecp, into: score)
-            score.addToEcpScores(ecpScore)
-            totalECPPoints += ecpScore.points
-        }
-        
-        // Create and calculate penalty scores
-        var totalPenaltyPoints: Int32 = 0
-        for penalty in penalties {
-            let penaltyScore = PenaltyScore.create(in: context, penalty: penalty, into: score)
-            score.addToPenaltyScores(penaltyScore)
-            totalPenaltyPoints += penaltyScore.points
-        }
-        
-        // Calculate and store final scores
-        let linePoints = lineScore.points
-        score.gnarScore = linePoints + totalTrickPoints + totalECPPoints - totalPenaltyPoints
-        score.heroScore = abs(linePoints) + abs(totalTrickPoints) + abs(totalECPPoints) + abs(totalPenaltyPoints)
-        
-        return score
+    var trickBonusScoresArray: [TrickBonusScore] { scoresArray("trickBonusScores") }
+    
+    var ecpScoresArray: [ECPScore] { scoresArray("ecpScores") }
+    
+    var penaltyScoresArray: [PenaltyScore] { scoresArray("penaltyScores") }
+    
+    // Generic helper for safe array access
+    private func scoresArray<T: NSManagedObject>(_ key: String) -> [T] {
+        guard let set = value(forKey: key) as? NSSet else { return [] }
+        return set.allObjects.compactMap { $0 as? T }
     }
     
-    // MARK: - Helper Methods
-    
-    func softDelete() {
-        isSoftDeleted = true
-        modifiedAt = Date()
-    }
+    // MARK: - Relationship Management
     
     func addToTrickBonusScores(_ trickScore: TrickBonusScore) {
         let items = mutableSetValue(forKey: "trickBonusScores")
@@ -167,44 +120,49 @@ extension Score {
         calculateTotalScore()
     }
     
-    func addLineScore(_ lineWorth: LineWorth, snowLevel: SnowLevel, in context: NSManagedObjectContext) {
-        let lineScore = LineScore.create(in: context, lineWorth: lineWorth, snowLevel: snowLevel)
-        lineScore.score = self
-        self.lineScore = lineScore
-        calculateTotalScore()
-    }
+    // MARK: - Score Calculation
     
-    func addTrickBonusScore(_ trickBonus: TrickBonus, in context: NSManagedObjectContext) {
-        let trickScore = TrickBonusScore(context: context)
-        trickScore.id = UUID()
-        trickScore.trickBonus = trickBonus
-        trickScore.timestamp = Date()
-        trickScore.points = trickBonus.points
-        self.addToTrickBonusScores(trickScore)
-    }
-    
-    func addECPScore(_ ecp: ECP, in context: NSManagedObjectContext) {
-        let ecpScore = ECPScore(context: context)
-        ecpScore.id = UUID()
-        ecpScore.ecp = ecp
-        ecpScore.timestamp = Date()
-        ecpScore.points = ecp.points
-        self.addToEcpScores(ecpScore)
-    }
-    
-    func addPenaltyScore(_ penalty: Penalty, in context: NSManagedObjectContext) {
-        let penaltyScore = PenaltyScore(context: context)
-        penaltyScore.id = UUID()
-        penaltyScore.penalty = penalty
-        penaltyScore.timestamp = Date()
-        penaltyScore.points = penalty.points
-        self.addToPenaltyScores(penaltyScore)
+    func calculateTotalScore() {
+        // Get line score points
+        let linePoints = lineScore?.points ?? 0
+        print("📊 Score \(id) Calculation:")
+        print("  Line Points: \(linePoints)")
+        
+        // Calculate trick bonus points
+        let trickPoints = trickBonusScoresArray.reduce(0) { $0 + $1.points }
+        print("  Trick Points: \(trickPoints)")
+        
+        // Calculate ECP points
+        let ecpPoints = ecpScoresArray.reduce(0) { $0 + $1.points }
+        print("  ECP Points: \(ecpPoints)")
+        
+        // Calculate penalty points (these should be subtracted)
+        let penaltyPoints = penaltyScoresArray.reduce(0) { $0 + $1.points }
+        print("  Penalty Points: \(penaltyPoints) (will be subtracted)")
+        
+        // Calculate total scores
+        gnarScore = linePoints + trickPoints + ecpPoints + penaltyPoints
+        print("  Total GNAR Score: \(gnarScore) = \(linePoints) + \(trickPoints) + \(ecpPoints) + \(penaltyPoints)")
+        
+        heroScore = abs(linePoints) + abs(trickPoints) + abs(ecpPoints) + abs(penaltyPoints)
+        print("  Hero Score: \(heroScore)")
     }
 }
 
+extension Score {
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<Score> {
+        return NSFetchRequest<Score>(entityName: "Score")
+    }
+    
+    // MARK: - Helper Methods
+    
+    func softDelete() {
+        isSoftDeleted = true
+        modifiedAt = Date()
+    }
+}
 
 extension Score {
-
     // MARK: - MultipeerConnectivity (MPC) Sync
 
     func toSyncPayload() -> ScoreSyncPayload? {
@@ -319,7 +277,7 @@ struct SyncRelationshipResolver {
         if let existing = try? context.fetch(request).first {
             // Update existing LineScore
             existing.points = payload.points
-            existing.snowLevelEnum = payload.snowLevel
+            existing.snowLevel = payload.snowLevel
             // Find LineWorth if needed
             if existing.lineWorth == nil {
                 existing.lineWorth = findLineWorthById(payload.lineWorthId)
@@ -330,7 +288,7 @@ struct SyncRelationshipResolver {
             let newLineScore = LineScore(context: context)
             newLineScore.id = payload.id
             newLineScore.points = payload.points
-            newLineScore.snowLevelEnum = payload.snowLevel
+            newLineScore.snowLevelRaw = payload.snowLevel.rawValue
             newLineScore.lineWorth = findLineWorthById(payload.lineWorthId)
             return newLineScore
         }

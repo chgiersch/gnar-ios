@@ -45,7 +45,7 @@ struct LineWorthPickerView: View {
                                     Image(systemName: iconName(for: level))
                                         .font(.title2)
                                         .foregroundColor(color(for: level))
-                                    Text(level.rawValue.capitalized)
+                                    Text(level.displayName)
                                         .font(.caption)
                                         .foregroundColor(color(for: level))
                                 }
@@ -123,7 +123,8 @@ struct LineWorthPickerView: View {
                     
                     Spacer()
                     
-                    Text("\(points(for: selectedSnowLevel)) pts")
+                    let points = points(for: selectedSnowLevel)
+                    Text("\(points) pts")
                         .font(.title3.bold())
                 }
                 
@@ -150,9 +151,9 @@ struct LineWorthPickerView: View {
         
         private func points(for level: SnowLevel) -> Int {
             switch level {
-            case .low: return line.basePointsLow?.intValue ?? 0
-            case .medium: return line.basePointsMedium?.intValue ?? 0
-            case .high: return line.basePointsHigh?.intValue ?? 0
+            case .low: return Int(truncating: line.basePointsLow ?? 0)
+            case .medium: return Int(truncating: line.basePointsMedium ?? 0)
+            case .high: return Int(truncating: line.basePointsHigh ?? 0)
             }
         }
     }

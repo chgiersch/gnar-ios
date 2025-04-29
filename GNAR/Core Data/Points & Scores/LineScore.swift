@@ -14,13 +14,40 @@ import SwiftUI
 public class LineScore: NSManagedObject, Identifiable {
     @NSManaged public var id: UUID
     @NSManaged public var lineWorth: LineWorth?
-    @NSManaged public var snowLevel: String?
+    @NSManaged public var snowLevelRaw: Int16
     @NSManaged public var points: Int32
     @NSManaged public var score: Score?
+    
+    var snowLevel: SnowLevel {
+        get {
+            SnowLevel(rawValue: snowLevelRaw) ?? .medium
+        }
+        set {
+            self.snowLevelRaw = newValue.rawValue
+        }
+    }
+    
+    convenience init(context: NSManagedObjectContext, lineWorth: LineWorth, snowLevel: SnowLevel) {
+        self.init(context: context)
+        self.id = UUID()
+        self.lineWorth = lineWorth
+        self.snowLevel = snowLevel
+        
+        switch snowLevel {
+        case .low:
+            self.points = lineWorth.basePointsLow?.int32Value ?? 0
+        case .medium:
+            self.points = lineWorth.basePointsMedium?.int32Value ?? 0
+        case .high:
+            self.points = lineWorth.basePointsHigh?.int32Value ?? 0
+        }
+    }
 }
 
-public enum SnowLevel: String, CaseIterable, Hashable, Codable {
-    case low, medium, high
+@objc public enum SnowLevel: Int16, CaseIterable, Hashable, Codable {
+    case low = 0
+    case medium = 1
+    case high = 2
     
     var displayColor: Color {
         switch self {
@@ -31,44 +58,16 @@ public enum SnowLevel: String, CaseIterable, Hashable, Codable {
     }
     
     var displayName: String {
-        self.rawValue.capitalized
+        switch self {
+        case .low: return "Low"
+        case .medium: return "Medium"
+        case .high: return "High"
+        }
     }
 }
 
 extension LineScore {
     @nonobjc public class func fetchRequest() -> NSFetchRequest<LineScore> {
         return NSFetchRequest<LineScore>(entityName: "LineScore")
-    }
-    
-    var snowLevelEnum: SnowLevel {
-        get {
-            guard let rawValue = snowLevel,
-                  let level = SnowLevel(rawValue: rawValue) else {
-                return .medium  // Default fallback for MVP
-            }
-            return level
-        }
-        set {
-            snowLevel = newValue.rawValue
-        }
-    }
-    
-    static func create(in context: NSManagedObjectContext, lineWorth: LineWorth, snowLevel: SnowLevel) -> LineScore {
-        let lineScore = LineScore(context: context)
-        lineScore.id = UUID()
-        lineScore.lineWorth = lineWorth
-        lineScore.snowLevelEnum = snowLevel  // Use snowLevelEnum setter
-        
-        // Calculate and store points based on snow level
-        switch snowLevel {
-        case .low:
-            lineScore.points = lineWorth.basePointsLow?.int32Value ?? 0
-        case .medium:
-            lineScore.points = lineWorth.basePointsMedium?.int32Value ?? 0
-        case .high:
-            lineScore.points = lineWorth.basePointsHigh?.int32Value ?? 0
-        }
-        
-        return lineScore
     }
 }

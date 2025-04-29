@@ -15,14 +15,9 @@ struct ScoreHistoryRow: View {
     let onDelete: () async -> Void
     let session: GameSession
     
-    // Calculate the correct GNAR score directly
-    private var correctGnarScore: Int32 {
-        let linePoints = score.lineScore?.points ?? 0
-        let trickPoints = score.trickBonusScoresArray.reduce(0) { $0 + $1.points }
-        let ecpPoints = score.ecpScoresArray.reduce(0) { $0 + $1.points }
-        let penaltyPoints = score.penaltyScoresArray.reduce(0) { $0 + $1.points }
-        
-        return linePoints + trickPoints + ecpPoints - penaltyPoints
+    // Use the stored GNAR score from Core Data
+    private var gnarScore: Int32 {
+        score.gnarScore
     }
     
     init(score: Score, isExpanded: Bool, onTap: @escaping () -> Void, onDelete: @escaping () async -> Void, session: GameSession) {
@@ -32,11 +27,10 @@ struct ScoreHistoryRow: View {
         self.onDelete = onDelete
         self.session = session
         
-        print("ScoreHistoryRow - gnarScore: \(score.gnarScore), heroScore: \(score.heroScore)")
-        print("ScoreHistoryRow - Line points: \(score.lineScore?.points ?? 0)")
-        print("ScoreHistoryRow - Trick points: \(score.trickBonusScoresArray.reduce(0) { $0 + $1.points })")
-        print("ScoreHistoryRow - ECP points: \(score.ecpScoresArray.reduce(0) { $0 + $1.points })")
-        print("ScoreHistoryRow - Penalty points: \(score.penaltyScoresArray.reduce(0) { $0 + $1.points })")
+        // Debug MPC sync issues
+        if score.syncedAt == nil {
+            print("🔄 Score \(score.id): Not synced")
+        }
     }
 
     var body: some View {
@@ -76,7 +70,7 @@ struct ScoreHistoryRow: View {
                 Spacer()
 
                 if !isExpanded {
-                    Text("\(correctGnarScore) pts")
+                    Text("\(gnarScore) pts")
                         .font(.subheadline)
                         .bold()
                         .padding(.leading, 8)
@@ -121,7 +115,7 @@ struct ScoreHistoryRow: View {
                     )
                     HStack {
                         Spacer()
-                        Text("Total: \(correctGnarScore) pts")
+                        Text("Total: \(gnarScore) pts")
                             .font(.subheadline)
                             .bold()
                     }

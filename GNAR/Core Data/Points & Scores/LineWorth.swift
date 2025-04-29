@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import SwiftUI
 
 @objc(LineWorth)
 public class LineWorth: NSManagedObject, Identifiable, Decodable {

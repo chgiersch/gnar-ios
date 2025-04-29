@@ -35,8 +35,11 @@ struct ScoreHistorySection: View {
                     onDelete: {
                         Task {
                             do {
+                                print("🗑️ ScoreHistorySection: Attempting to soft delete score \(score.id)")
                                 try await viewModel.deleteScore(score)
+                                print("✅ ScoreHistorySection: Successfully soft deleted score \(score.id)")
                             } catch {
+                                print("❌ ScoreHistorySection: Failed to soft delete score \(score.id): \(error)")
                                 handleError(error)
                             }
                         }
@@ -47,25 +50,32 @@ struct ScoreHistorySection: View {
             }
             .onDelete { indexSet in
                 Task {
-                    for index in indexSet {
+                    // Delete in reverse order to maintain correct indices
+                    for index in indexSet.reversed() {
                         let score = sortedScores[index]
+                        print("🗑️ ScoreHistorySection: Swipe soft deleting score \(score.id)")
                         do {
                             try await viewModel.deleteScore(score)
+                            print("✅ ScoreHistorySection: Successfully swipe soft deleted score \(score.id)")
                         } catch {
+                            print("❌ ScoreHistorySection: Failed to swipe soft delete score \(score.id): \(error)")
                             handleError(error)
+                            break  // Stop deleting if we hit an error
                         }
                     }
                 }
             }
         }
-        .animation(.easeInOut, value: scores.count)
+        .onAppear() {
+            printScores() // Debugging line to print scores
+        }
     }
 
     /// Returns scores sorted by timestamp, newest first
-    private var sortedScores: [Score] {
-        scores.sorted { (score1, score2) -> Bool in
-            return score1.createdAt > score2.createdAt
-        }
+    var sortedScores: [Score] {
+        let nonDeletedScores = scores.filter { !$0.isSoftDeleted }
+        print("📊 ScoreHistory: \(nonDeletedScores.count) active scores")
+        return nonDeletedScores.sorted { $0.createdAt > $1.createdAt }
     }
 
     /// Toggles the expansion state of a score row
@@ -86,5 +96,11 @@ struct ScoreHistorySection: View {
             try? await Task.sleep(nanoseconds: 3_000_000_000)
             errorMessage = nil
         }
+    }
+    
+    
+    // TODO: Remove this function after debugging
+    func printScores() {
+        print("ScoreHistorySection - scores: \(scores)")
     }
 }

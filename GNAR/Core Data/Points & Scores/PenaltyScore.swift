@@ -18,6 +18,15 @@ public class PenaltyScore: NSManagedObject, Identifiable {
     
     @NSManaged public var penalty: Penalty?
     @NSManaged public var score: Score?
+    
+    convenience init(context: NSManagedObjectContext, penalty: Penalty) {
+        self.init(context: context)
+        self.id = UUID()
+        self.timestamp = Date()
+        self.penalty = penalty
+        self.points = penalty.points
+        self.verified = false
+    }
 }
 
 extension PenaltyScore {
@@ -25,14 +34,14 @@ extension PenaltyScore {
         return NSFetchRequest<PenaltyScore>(entityName: "PenaltyScore")
     }
     
-    static func create(in context: NSManagedObjectContext, penalty: Penalty, into score: Score) -> PenaltyScore {
-        let penaltyScore = PenaltyScore(context: context)
-        penaltyScore.id = UUID()
-        penaltyScore.penalty = penalty
-        penaltyScore.timestamp = Date()
-        penaltyScore.points = penalty.points
-        penaltyScore.verified = false
-        penaltyScore.score = score
-        return penaltyScore
-    }
+//    static func create(in context: NSManagedObjectContext, penalty: Penalty, into score: Score) -> PenaltyScore {
+//        let penaltyScore = PenaltyScore(context: context)
+//        penaltyScore.id = UUID()
+//        penaltyScore.penalty = penalty
+//        penaltyScore.timestamp = Date()
+//        penaltyScore.points = penalty.points
+//        penaltyScore.verified = false
+//        penaltyScore.score = score
+//        return penaltyScore
+//    }
 }

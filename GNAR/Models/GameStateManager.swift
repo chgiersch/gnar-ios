@@ -126,33 +126,52 @@ final class GameStateManager: ObservableObject, GameState {
     
     /// Adds a score to the current session
     func addScore(_ score: Score) async throws {
+        print("🎮 GameStateManager: Starting to add score \(score.id)")
         isLoading = true
         defer { isLoading = false }
         
         guard let session = currentSession else {
+            print("❌ GameStateManager: No active session found")
             throw NSError(domain: "GameSession", 
                          code: 404, 
                          userInfo: [NSLocalizedDescriptionKey: "No active session for score"])
         }
         
+        print("🔗 GameStateManager: Associating score with session \(session.id)")
         // Make sure the score is associated with the session
         score.gameSession = session
         
+        print("📊 GameStateManager: Calculating total score")
         // Ensure the score has correct total values
         score.calculateTotalScore()
         
+        print("💾 GameStateManager: Saving to Core Data")
         // Save the context
         try viewContext.save()
+        print("✅ GameStateManager: Score saved successfully")
     }
     
     /// Deletes a score from the database
     func deleteScore(_ score: Score) async throws {
+        print("🗑️ GameStateManager: Starting to soft delete score \(score.id)")
         isLoading = true
         defer { isLoading = false }
         
-        viewContext.delete(score)
+        print("⚠️ GameStateManager: Soft deleting score")
+        score.softDelete()
+        
+        print("💾 GameStateManager: Saving context after soft delete")
         try viewContext.save()
-        try await loadLeaderboard()
+        
+        // Instead of reloading the entire leaderboard, just update the session's scores
+        if let session = currentSession {
+            print("🔄 GameStateManager: Updating session scores")
+            let activeScores = session.scoresArray.filter { !$0.isSoftDeleted }
+            session.scores = NSSet(array: activeScores)
+            try viewContext.save()
+        }
+        
+        print("✅ GameStateManager: Score soft deleted successfully")
     }
     
     // MARK: - Player Management
@@ -197,28 +216,53 @@ final class GameStateManager: ObservableObject, GameState {
     
     /// Loads the leaderboard for the current session
     func loadLeaderboard() async throws {
+        print("📊 GameStateManager: Starting leaderboard load")
         guard let session = currentSession else {
+            print("❌ GameStateManager: No active session for leaderboard")
             throw NSError(domain: "GameSession", 
                          code: 404, 
                          userInfo: [NSLocalizedDescriptionKey: "No active session for leaderboard"])
         }
         
+        print("🔍 GameStateManager: Creating fetch request for session \(session.id)")
         let request: NSFetchRequest<Score> = Score.fetchRequest()
         request.predicate = NSPredicate(format: "gameSession == %@", session)
         request.sortDescriptors = [
             NSSortDescriptor(keyPath: \Score.createdAt, ascending: false)
         ]
         
-        let scores = try await viewContext.fetch(request)
+        print("📥 GameStateManager: Fetching scores from Core Data")
+        print("  ℹ️ Current session has \(session.scoresArray.count) scores")
+        print("  ℹ️ Fetching with predicate: gameSession == \(session.id)")
         
-        // Ensure all scores have correct gnarScore and heroScore values
-        scores.forEach { score in
-            score.calculateTotalScore()
+        do {
+            let scores = try await viewContext.fetch(request)
+            print("✅ GameStateManager: Fetched \(scores.count) scores")
+            print("  ℹ️ First score ID: \(scores.first?.id.uuidString ?? "none")")
+            print("  ℹ️ First score createdAt: \(scores.first?.createdAt.description ?? "nil")")
+            
+            print("🧮 GameStateManager: Calculating total scores")
+            scores.forEach { score in
+                print("  📝 Calculating score \(score.id)")
+                print("    ℹ️ Score has lineScore: \(score.lineScore != nil)")
+                print("    ℹ️ Score has trickBonusScores: \(score.trickBonusScores?.count ?? 0)")
+                print("    ℹ️ Score has ecpScores: \(score.ecpScores?.count ?? 0)")
+                print("    ℹ️ Score has penaltyScores: \(score.penaltyScores?.count ?? 0)")
+                score.calculateTotalScore()
+            }
+            
+            print("🔄 GameStateManager: Updating session scores")
+            // Update the session's scores without replacing the entire session object
+            session.scores = NSSet(array: scores)
+            
+            print("💾 GameStateManager: Saving context after leaderboard update")
+            try viewContext.save()
+            print("✅ GameStateManager: Leaderboard load complete")
+        } catch {
+            print("❌ GameStateManager: Error during leaderboard load: \(error)")
+            print("  ℹ️ Error description: \(error.localizedDescription)")
+            throw error
         }
-        
-        // Update the session's scores without replacing the entire session object
-        session.scores = NSSet(array: scores)
-        try viewContext.save()
     }
     
     /// Updates the leaderboard by saving changes to the context

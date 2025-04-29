@@ -14,6 +14,7 @@
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="points" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="verified" attributeType="Boolean" usesScalarValueType="YES"/>
         <relationship name="ecp" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ECP"/>
         <relationship name="parentScore" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Score" inverseName="ecpScores" inverseEntity="Score"/>
     </entity>
@@ -30,7 +31,7 @@
     <entity name="LineScore" representedClassName="LineScore" syncable="YES">
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="points" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="snowLevel" optional="YES" attributeType="String"/>
+        <attribute name="snowLevelRaw" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="lineWorth" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="LineWorth"/>
         <relationship name="score" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Score" inverseName="lineScore" inverseEntity="Score"/>
     </entity>
@@ -68,6 +69,7 @@
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="points" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="verified" attributeType="Boolean" usesScalarValueType="YES"/>
         <relationship name="parentScore" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Score" inverseName="penaltyScores" inverseEntity="Score"/>
         <relationship name="penalty" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Penalty"/>
     </entity>
@@ -79,6 +81,7 @@
     </entity>
     <entity name="Score" representedClassName="Score" syncable="YES">
         <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="creatorName" optional="YES" attributeType="String"/>
         <attribute name="gnarScore" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="heroScore" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
@@ -106,6 +109,7 @@
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="points" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="verified" attributeType="Boolean" usesScalarValueType="YES"/>
         <relationship name="parentScore" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Score" inverseName="trickBonusScores" inverseEntity="Score"/>
         <relationship name="trickBonus" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TrickBonus"/>
     </entity>

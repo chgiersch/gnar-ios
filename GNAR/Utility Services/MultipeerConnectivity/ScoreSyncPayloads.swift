@@ -61,7 +61,7 @@ extension LineScore {
         return LineScorePayload(
             id: id,
             lineWorthId: lineWorthId,
-            snowLevel: snowLevelEnum,
+            snowLevel: snowLevel,
             points: points
         )
     }

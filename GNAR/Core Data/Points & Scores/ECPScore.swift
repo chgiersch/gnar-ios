@@ -18,6 +18,15 @@ public class ECPScore: NSManagedObject, Identifiable {
     
     @NSManaged public var ecp: ECP?
     @NSManaged public var score: Score?
+    
+    convenience init(context: NSManagedObjectContext, ecp: ECP) {
+        self.init(context: context)
+        self.id = UUID()
+        self.timestamp = Date()
+        self.ecp = ecp
+        self.points = ecp.points
+        self.verified = false
+    }
 }
 
 extension ECPScore {
@@ -25,14 +34,14 @@ extension ECPScore {
         return NSFetchRequest<ECPScore>(entityName: "ECPScore")
     }
     
-    static func create(in context: NSManagedObjectContext, ecp: ECP, into score: Score) -> ECPScore {
-        let ecpScore = ECPScore(context: context)
-        ecpScore.id = UUID()
-        ecpScore.ecp = ecp
-        ecpScore.timestamp = Date()
-        ecpScore.points = ecp.points
-        ecpScore.verified = false
-        ecpScore.score = score
-        return ecpScore
-    }
+//    static func create(in context: NSManagedObjectContext, ecp: ECP, into score: Score) -> ECPScore {
+//        let ecpScore = ECPScore(context: context)
+//        ecpScore.id = UUID()
+//        ecpScore.ecp = ecp
+//        ecpScore.timestamp = Date()
+//        ecpScore.points = ecp.points
+//        ecpScore.verified = false
+//        ecpScore.score = score
+//        return ecpScore
+//    }
 }

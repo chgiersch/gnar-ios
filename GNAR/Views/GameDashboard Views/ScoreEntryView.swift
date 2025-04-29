@@ -263,7 +263,7 @@ struct PenaltySectionView: View {
                                             Text(penalty.name)
                                                 .font(.headline)
                                             Spacer()
-                                            Text("-\(penalty.points) PTS")
+                                            Text("\(penalty.points) PTS")
                                                 .font(.headline)
                                                 .foregroundColor(.red)
                                         }
