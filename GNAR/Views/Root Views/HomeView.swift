@@ -9,10 +9,12 @@
 import SwiftUI
 
 struct HomeView: View {
+    @State private var scrollProgress: CGFloat = 0.0
+    
     var body: some View {
         ZStack {
-            // Snowflake animation background (Step 1 test)
-            SnowflakeViewWrapper()
+            // Snowflake animation background - intensity responds to scroll
+            SnowflakeViewWrapper(scrollProgress: scrollProgress)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -28,6 +30,22 @@ struct HomeView: View {
                 // Scrollable content
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
+                        // Invisible scroll tracker at the top
+                        GeometryReader { geometry in
+                            let minY = geometry.frame(in: .global).minY
+                            let progress = max(0, min(1, (200 - minY) / 1000))
+                            Color.clear
+                                .onAppear {
+                                    scrollProgress = progress
+                                    print("🌨️ Initial scroll progress: \(progress)")
+                                }
+                                .onChange(of: minY) { _, _ in
+                                    scrollProgress = progress
+                                    print("🌨️ Scroll progress: \(progress), minY: \(minY)")
+                                }
+                        }
+                        .frame(height: 1)
+                        
                         Text("Welcome to GNAR!")
                             .font(.largeTitle)
                             .frame(maxWidth: .infinity, alignment: .center)

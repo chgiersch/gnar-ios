@@ -2,11 +2,18 @@
 //  SnowflakeViewWrapper.swift
 //  GNAR
 //
-//  SwiftUI wrapper for our CoreAnimation snowflake tutorial
+//  SwiftUI wrapper for SnowflakeView with scroll-responsive storm intensity
 
 import SwiftUI
 
 struct SnowflakeViewWrapper: UIViewRepresentable {
+    
+    /// Scroll progress from 0.0 (top) to 1.0 (bottom)
+    let scrollProgress: CGFloat
+    
+    init(scrollProgress: CGFloat = 0.0) {
+        self.scrollProgress = scrollProgress
+    }
     
     func makeUIView(context: Context) -> SnowflakeView {
         let view = SnowflakeView()
@@ -14,7 +21,8 @@ struct SnowflakeViewWrapper: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: SnowflakeView, context: Context) {
-        // No updates needed for this simple version
+        // Update storm intensity based on scroll position
+        uiView.adjustStormIntensity(scrollProgress: scrollProgress)
     }
 }
 
