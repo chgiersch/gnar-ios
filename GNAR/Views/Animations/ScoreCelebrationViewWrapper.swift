@@ -22,6 +22,10 @@ struct ScoreCelebrationViewWrapper: UIViewRepresentable {
         return view
     }
     
+    func updateUIView(_ uiView: ScoreCelebrationView, context: Context) {
+        // Don't restart animation on updates - this prevents the inconsistency!
+    }
+    
     func sizeThatFits(_ proposal: ProposedViewSize, uiView: ScoreCelebrationView, context: Context) -> CGSize {
         return CGSize(width: 200, height: 100)
     }
