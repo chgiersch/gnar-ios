@@ -11,11 +11,16 @@ import SwiftUI
 struct LeaderboardSection: View {
     let summaries: [LeaderboardSummary]
     @Binding var selectedPlayer: Player?
+    let showCelebration: Bool
+    let celebrationScore: Int
+    let onCelebrationComplete: () -> Void
 
     var body: some View {
         Section("Leaderboard") {
             ForEach(summaries) { summary in
                 let player = summary.player
+                let isSelected = selectedPlayer?.id == player?.id
+                
                 Button {
                     selectedPlayer = player
                 } label: {
@@ -44,10 +49,15 @@ struct LeaderboardSection: View {
                     .padding(.horizontal)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(selectedPlayer?.id == player?.id ? Color.accentColor.opacity(0.15) : Color.clear)
+                            .fill(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
                     )
                 }
                 .buttonStyle(.plain)
+                .celebrationOverlay(
+                    show: showCelebration && isSelected,
+                    score: celebrationScore,
+                    onComplete: onCelebrationComplete
+                )
             }
         }
     }

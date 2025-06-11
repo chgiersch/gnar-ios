@@ -41,7 +41,8 @@ struct ScoreEntryView: View {
     
     init(viewContext: NSManagedObjectContext,
          selectedPlayer: Player,
-         gameSession: GameSession, onDismiss: @escaping () -> Void) {
+         gameSession: GameSession, 
+         onDismiss: @escaping () -> Void) {
         self.selectedPlayer = selectedPlayer
         self.gameSession = gameSession
         self.onDismiss = onDismiss

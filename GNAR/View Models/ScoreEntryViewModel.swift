@@ -62,7 +62,8 @@ class ScoreEntryViewModel: ObservableObject {
     }
     
     var canAddScore: Bool {
-        selectedLine != nil && currentScoreValue > 0
+        // Check if any scores have been recorded
+        !selectedTricks.isEmpty || !selectedECPs.isEmpty || !selectedPenalties.isEmpty || selectedLine != nil
     }
     
     // MARK: - Initialization
